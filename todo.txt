@@ -1,0 +1,15 @@
+file
+    new
+    open
+    save
+    rename
+    --
+    exit
+edit
+    cut
+    copy
+    paste
+options
+help
+    context
+    about
