@@ -9,7 +9,10 @@ edit
     cut
     copy
     paste
-options
+options:
+    project könyvár
+    git repo
+
 help
     context
     about

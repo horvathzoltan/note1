@@ -1,6 +1,9 @@
 #include "mainwindow.h"
+#include "settings.h"
 
 #include <QApplication>
+
+static Settings settings;
 
 int main(int argc, char *argv[])
 {

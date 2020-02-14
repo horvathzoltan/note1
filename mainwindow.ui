@@ -23,7 +23,7 @@
       <property name="childrenCollapsible">
        <bool>false</bool>
       </property>
-      <widget class="QTreeView" name="treeView">
+      <widget class="QTreeView" name="fileTreeView">
        <property name="minimumSize">
         <size>
          <width>100</width>
