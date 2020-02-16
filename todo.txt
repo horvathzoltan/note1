@@ -1,8 +1,6 @@
 file
-    new
-    open
-    save
-    rename
+    new note
+    new category
     --
     exit
 edit
@@ -12,7 +10,14 @@ edit
 options:
     project könyvár
     git repo
-
+    lastopened könyvtár
 help
     context
     about
+
+a legutolsó fájlt meg kell jegyezni
+a fáj bármikor átnevezhető nevének átírásával
+
+
+https://doc.qt.io/qt-5/qtwidgets-richtext-syntaxhighlighter-example.html
+https://www.qtcentre.org/threads/53567-QPlainTextEdit-highlight-word

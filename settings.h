@@ -9,6 +9,8 @@ struct Settings
 {
     QString projectPath;
     QString gitUrl;
+public:
+    Settings();
 };
 
 #endif // SETTINGS_H

@@ -16,11 +16,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    filenamehelper.cpp \
     main.cpp \
     mainwindow.cpp \
     settings.cpp
 
 HEADERS += \
+    filenamehelper.h \
     mainwindow.h \
     settings.h
 
@@ -29,6 +31,49 @@ FORMS += \
 
 TRANSLATIONS += \
     note1_hu_HU.ts
+
+unix:HOME = $$system(echo $HOME)
+win32:HOME = $$system(echo %userprofile%)
+
+CONFIG(debug, debug|release){
+BUILD = debug
+} else {
+BUILD = release
+}
+
+COMMON = common
+COMMON_LIBS = $$COMMON"lib"
+
+equals(BUILD,debug) {
+    #message( "build is _ debug" )
+    COMMON_LIBS = $$COMMON_LIBS"_debug"
+}
+
+!contains(QMAKE_TARGET.arch, x86_64) {
+    !contains(QT_ARCH, x86_64) {
+        COMMON_LIBS = $$COMMON_LIBS"_32"
+    }
+}
+
+COMMON_LIBS_FULLPATH = $$shell_path($$HOME/$$COMMON_LIBS)
+COMMON_INCLUDE_FULLPATH = $$shell_path($$HOME/$$COMMON)
+
+message("COMMON_LIBS_FULLPATH: " $$COMMON_LIBS_FULLPATH);
+message("COMMON_INCLUDE_FULLPATH: " $$COMMON_INCLUDE_FULLPATH);
+
+unix:!macx:
+{
+#LIBS += -L$$COMMON_LIBS_FULLPATH/ -lstringhelper
+LIBS += -L$$COMMON_LIBS_FULLPATH/ -lfilehelper
+LIBS += -L$$COMMON_LIBS_FULLPATH/ -lshortguid
+LIBS += -L$$COMMON_LIBS_FULLPATH/ -llogger
+LIBS += -L$$COMMON_LIBS_FULLPATH/ -lmacrofactory
+#LIBS += -L$$COMMON_LIBS_FULLPATH/ -linihelper
+#LIBS += -L$$COMMON_LIBS_FULLPATH/ -lsettingshelper
+}
+
+INCLUDEPATH += $$COMMON_INCLUDE_FULLPATH
+DEPENDPATH += $$COMMON_INCLUDE_FULLPATH
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

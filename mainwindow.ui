@@ -14,36 +14,91 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
      <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <property name="childrenCollapsible">
-       <bool>false</bool>
-      </property>
-      <widget class="QTreeView" name="fileTreeView">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>400</width>
-         <height>16777215</height>
-        </size>
-       </property>
+      <widget class="QWidget" name="verticalLayoutWidget_3">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item>
+         <widget class="QFrame" name="frame">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="addDirButton">
+             <property name="text">
+              <string>AddDir</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="addNoteButton">
+             <property name="text">
+              <string>AddNote</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="EditButton">
+             <property name="text">
+              <string>Edit</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="deleteButton">
+             <property name="text">
+              <string>Delete</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeView" name="fileTreeView">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
-      <widget class="QPlainTextEdit" name="plainTextEdit">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
+      <widget class="QWidget" name="verticalLayoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="filenameEdit"/>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="plainTextEdit">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -60,17 +115,6 @@
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>LeftToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
  </widget>
  <resources/>
  <connections/>

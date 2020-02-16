@@ -3,7 +3,7 @@
 
 #include <QApplication>
 
-static Settings settings;
+Settings settings;
 
 int main(int argc, char *argv[])
 {
