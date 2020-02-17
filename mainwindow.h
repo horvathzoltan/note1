@@ -13,13 +13,14 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 private:
     QFileSystemModel *model;
+    QModelIndex model_index;
     //QString filename;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void Load(const QModelIndex &index);
     void Rename(const QModelIndex &index, const QString &fn);
-    QModelIndex *getIndex();
+    const QModelIndex getIndex();
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();
