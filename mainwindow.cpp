@@ -4,6 +4,7 @@
 #include "common/helper/file/filehelper.h"
 #include <QFileSystemModel>
 #include "common/logger/log.h"
+#include <QCryptographicHash>
 
 extern Settings settings;
 
@@ -15,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     model = new QFileSystemModel;
     model_index = QModelIndex();
+    model_hash = QString();
     // auto projectDir= QDir(settings.projectPath);
     //auto homeDir = QDir::homePath();
 
@@ -42,15 +44,31 @@ MainWindow::~MainWindow()
 void MainWindow::Rename(const QModelIndex &index, const QString& fn){
     if(!index.isValid()) return;
     if(fn.isEmpty()) return;
-    if(model->fileName(index)==fn) return;
+    if(model->fileName(index)==fn) return;   
     auto oldfn = model->filePath(index);
-    QFile f(oldfn);
-    auto isok = f.rename(fn);
-    zInfo(QStringLiteral("rename: %1->%2 %3").arg(oldfn).arg(fn).arg(isok));
+    //auto path = QDir().absoluteFilePath(oldfn);
+    QFileInfo fi(oldfn);
+    auto dir = fi.absoluteDir();
+    auto newfile = dir.filePath(fn);
+    if(QFile::exists(newfile)) return;
+    QFile f(oldfn);   
+    //auto isok =
+    f.rename(newfile);
+    //zInfo(QStringLiteral("rename: %1->%2 %3").arg(oldfn).arg(fn).arg(isok));
+}
+
+void MainWindow::Save(const QModelIndex &index){
+    if(!index.isValid()) return;
+    auto txt = ui->plainTextEdit->toPlainText();
+    auto hash = GetHash(txt);
+    if(model_hash==hash) return;
+    auto filepath = model->filePath(index);
+    com::helper::FileHelper::save(txt, filepath);
 }
 
 void MainWindow::Load(const QModelIndex &index)
 {
+    Save(model_index);
     Rename(model_index, ui->filenameEdit->text());
 
     if(model->isDir(index)) return;
@@ -60,8 +78,14 @@ void MainWindow::Load(const QModelIndex &index)
     ui->filenameEdit->setText(filename);
     ui->plainTextEdit->setPlainText(txt);
     model_index = index;
-}
+    model_hash = GetHash(txt);//QString(QCryptographicHash::hash(txt.toUtf8(),QCryptographicHash::Md5).toHex());
+    //statusBar()->showMessage("Loaded", 2000);
+    zInfo("Loaded");
+} 
 
+QString MainWindow::GetHash(const QString &txt){
+    return QString(QCryptographicHash::hash(txt.toUtf8(),QCryptographicHash::Md5).toHex());
+}
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 {
     Load(index);
@@ -85,6 +109,20 @@ const QModelIndex MainWindow::getIndex(){
 void MainWindow::closeEvent(QCloseEvent *event) {
     auto index = getIndex();
     if(!index.isValid()) return;
-
+    Save(model_index);
     Rename(model_index, ui->filenameEdit->text());
+}
+
+
+
+void MainWindow::on_addDirButton_clicked()
+{
+    auto ix = getIndex();
+    model->mkdir(ix, "makesz");
+
+}
+
+void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *w)
+{
+    reinterpret_cast<MainWindow*>(w)->statusBar()->showMessage(msg, 2000);
 }
