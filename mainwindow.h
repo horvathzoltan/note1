@@ -4,6 +4,7 @@
 #include <QFileSystemModel>
 #include <QMainWindow>
 #include "common/logger/log.h"
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,7 +17,15 @@ private:
     QFileSystemModel *model;
     QModelIndex model_index;
     QString model_hash;
-    //QString filename;
+    static const QString MSG_ADDNEW;
+    static const QString MSG_ADDNEWDIALOG;
+    static const QString MSG_FAILEDTO;
+    static const QString FILE;
+    static const QString DIR;
+    static const QString DELETE;
+    static const QString CREATE;
+    static const int AUTOSAVE_SEC;
+    QTimer autosave_timer;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -27,14 +36,21 @@ public:
     QString GetHash(const QString &txt);
     static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
 
+    QString NewDirDialog(const QString &title);
+    void UpdateEditorState();
+    void UpdateActionButtonState(const QModelIndex &index);
+    void setActionButtonState(bool x);
+    void setEditorState(bool x);
+    void Save();
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();
     void closeEvent(QCloseEvent *event);
-    void on_addDirButton_clicked();
-    //typedef void (*zLogGUIfn)(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
-
-
+    void on_addDirButton_clicked();    
+    void on_deleteButton_clicked();
+    void on_addNoteButton_clicked();
+    void on_fileTreeView_clicked(const QModelIndex &index);
+void on_timerupdate();
 private:
     Ui::MainWindow *ui;
 };
