@@ -66,13 +66,13 @@ message("COMMON_INCLUDE_FULLPATH: " $$COMMON_INCLUDE_FULLPATH);
 
 unix:!macx:
 {
-#LIBS += -L$$COMMON_LIBS_FULLPATH/ -lstringhelper
+LIBS += -L$$COMMON_LIBS_FULLPATH/ -lstringhelper
 LIBS += -L$$COMMON_LIBS_FULLPATH/ -lfilehelper
 LIBS += -L$$COMMON_LIBS_FULLPATH/ -lshortguid
 LIBS += -L$$COMMON_LIBS_FULLPATH/ -llogger
 LIBS += -L$$COMMON_LIBS_FULLPATH/ -lmacrofactory
-#LIBS += -L$$COMMON_LIBS_FULLPATH/ -linihelper
-#LIBS += -L$$COMMON_LIBS_FULLPATH/ -lsettingshelper
+LIBS += -L$$COMMON_LIBS_FULLPATH/ -linihelper
+LIBS += -L$$COMMON_LIBS_FULLPATH/ -lsettingshelper
 }
 
 INCLUDEPATH += $$COMMON_INCLUDE_FULLPATH

@@ -16,7 +16,7 @@ help
     about
 
 a legutolsó fájlt meg kell jegyezni
-a fáj bármikor átnevezhető nevének átírásával
+*a fáj bármikor átnevezhető nevének átírásával
 
 
 https://doc.qt.io/qt-5/qtwidgets-richtext-syntaxhighlighter-example.html
