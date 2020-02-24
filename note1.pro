@@ -20,17 +20,20 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     newfiledialog.cpp \
-    settings.cpp
+    settings.cpp \
+    settingsdialog.cpp
 
 HEADERS += \
     filenamehelper.h \
     mainwindow.h \
     newfiledialog.h \
-    settings.h
+    settings.h \
+    settingsdialog.h
 
 FORMS += \
     mainwindow.ui \
-    newfiledialog.ui
+    newfiledialog.ui \
+    settingsdialog.ui
 
 TRANSLATIONS += \
     note1_hu_HU.ts

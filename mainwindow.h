@@ -36,12 +36,15 @@ public:
     QString GetHash(const QString &txt);
     static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
 
-    QString NewDirDialog(const QString &title);
+    QString DisplayNewDirDialog(const QString &title);
+    void DisplaySettingsDialog(const QString& title);
+
     void UpdateEditorState();
     void UpdateActionButtonState(const QModelIndex &index);
     void setActionButtonState(bool x);
     void setEditorState(bool x);
     void Save();
+    void setRootPath(const QString &path);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();
@@ -50,7 +53,10 @@ private slots:
     void on_deleteButton_clicked();
     void on_addNoteButton_clicked();
     void on_fileTreeView_clicked(const QModelIndex &index);
-void on_timerupdate();
+    void on_timerupdate();
+    void on_SettingsButton_clicked();
+
+
 private:
     Ui::MainWindow *ui;
 };

@@ -8,6 +8,9 @@
 #include <QFileSystemModel>
 #include "common/logger/log.h"
 #include <QCryptographicHash>
+#include "settingsdialog.h"
+#include "common/helper/settings/settingshelper.h"
+
 
 extern Settings settings;
 
@@ -32,15 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
     // auto projectDir= QDir(settings.projectPath);
     //auto homeDir = QDir::homePath();
 
-    auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
-    if(!QDir(projectDir).exists()){
-        QDir(QDir::homePath()).mkpath(projectDir);
-    }
+//    auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
+//    if(!QDir(projectDir).exists()){
+//        QDir(QDir::homePath()).mkpath(projectDir);
+//    }
 
-    model->setRootPath(projectDir);
-    QModelIndex idx = model->index(projectDir);
-    ui->fileTreeView->setModel(model);
-    ui->fileTreeView->setRootIndex(idx);
+//    model->setRootPath(projectDir);
+    setRootPath(settings.projectPath);
+    //QModelIndex idx = model->index(projectDir);
+//    ui->fileTreeView->setModel(model);
+//    ui->fileTreeView->setRootIndex(idx);
 
     for (int i = 1; i < model->columnCount(); ++i)
         ui->fileTreeView->hideColumn(i);
@@ -142,20 +146,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     Save();
 }
 
-QString  MainWindow::NewDirDialog(const QString& title){
-    if(title.isEmpty()) return QString();
-    NewFileDialog dialog(this);
-    dialog.setTitle(title);
-    dialog.exec();
-    if(dialog.result()!=QDialog::Accepted) return QString();
-    return dialog.filename();
-}
-
 void MainWindow::on_addDirButton_clicked()
 {
     auto ix = getIndex();
     //if(!model->isDir(ix)) return;
-    auto fn = NewDirDialog(MSG_ADDNEWDIALOG.arg(DIR));
+    auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(DIR));
     if(fn.isEmpty()) return;
     QModelIndex newix;
     if(model->isDir(ix))
@@ -194,7 +189,7 @@ void MainWindow::on_deleteButton_clicked()
 void MainWindow::on_addNoteButton_clicked()
 {
     auto ix = getIndex();
-    auto fn = NewDirDialog(MSG_ADDNEWDIALOG.arg(FILE));
+    auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(FILE));
     if(fn.isEmpty()) return;
     //auto oldfn = model->filePath(ix);
     QString newfile;
@@ -258,4 +253,66 @@ void MainWindow::setActionButtonState(bool x){
 void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 {
     UpdateActionButtonState(index);
+}
+
+QString  MainWindow::DisplayNewDirDialog(const QString& title){
+    if(title.isEmpty()) return QString();
+    NewFileDialog dialog(this);
+    dialog.setTitle(title);
+    dialog.exec();
+    if(dialog.result()!=QDialog::Accepted) return QString();
+    return dialog.filename();
+}
+
+void MainWindow::setRootPath(const QString& path){
+    //if(settings.projectPath.startsWith(QDir::homePath()))
+    auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
+    if(!QDir(projectDir).exists()){
+        QDir(QDir::homePath()).mkpath(projectDir);
+    }
+    model->setRootPath(projectDir);
+    QModelIndex idx = model->index(projectDir);
+    ui->fileTreeView->setModel(model);
+    ui->fileTreeView->setRootIndex(idx);
+}
+
+void  MainWindow::DisplaySettingsDialog(const QString& title){
+    if(title.isEmpty()) return;
+    SettingsDialog dialog(this);
+    //dialog.setTitle(title);
+    dialog.init(&settings);
+    //dialog.SetData(settings);
+    dialog.exec();
+    if(dialog.result()!=QDialog::Accepted) return;
+    //auto new_settings = dialog.GetData();
+    if(!settings.isValid())
+    {
+        zInfo("Invalid settings");
+        return;
+    }
+    zInfo("Valid settings");
+    com::helper::SettingsHelper::saveSettings();
+
+    // bementeni fájlba
+    setRootPath(settings.projectPath);
+    // return dialog.filename();
+/*
+ * mindíg sync:
+ * ami fent van, letölti? i/n
+ * ami lent van, feltölti? i/n
+*/
+
+
+    /*
+     * üres könyvtár -> üres repo = kezdés
+     * üres könyvtár -> van repo = letöltés
+     * tele könyvtár -> üres repo = feltöltés
+     * tele könyvtár -> tele repo = sync
+     *
+ */
+
+}
+void MainWindow::on_SettingsButton_clicked()
+{
+    DisplaySettingsDialog(MSG_ADDNEWDIALOG.arg(DIR));
 }

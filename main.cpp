@@ -10,10 +10,12 @@ Settings settings;
 int main(int argc, char *argv[])
 {           
     QApplication a(argc, argv);    
-    com::helper::SettingsHelper::init(FilenameHelper::GetIni(), &settings);
-    //settings.init();
+    com::helper::SettingsHelper::init(FilenameHelper::GetIni(), &settings);    
+    com::helper::SettingsHelper::loadSettings();
     MainWindow w;
     Log::init(MainWindow::msg, false, &w, false);
     w.show();
-    return a.exec();
+    auto r = a.exec();
+    com::helper::SettingsHelper::saveSettings();
+    return r;
 }

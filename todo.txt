@@ -21,3 +21,8 @@ a legutolsó fájlt meg kell jegyezni
 
 https://doc.qt.io/qt-5/qtwidgets-richtext-syntaxhighlighter-example.html
 https://www.qtcentre.org/threads/53567-QPlainTextEdit-highlight-word
+
+https://help.github.com/en/github/importing-your-projects-to-github/adding-an-existing-project-to-github-using-the-command-line
+https://github.com/note55/note1.git
+horvath.zoltan.mobil3@gmail.com
+asERxc5678asERxc56

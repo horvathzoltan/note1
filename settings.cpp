@@ -7,27 +7,22 @@
 Settings::Settings()
 {
     this->projectPath=FilenameHelper::normalaizedir(R"(fejlesztes_notes)");// \notes1
-    this->gitUrl = "giturl";
+    this->gitUrl = "https://github.com/note55/note1.git";
+    this->gitUser = "horvath.zoltan.mobil3@gmail.com";
+    this->gitPasswd = "asERxc5678asERxc56";
 }
-
-//void Settings::init(const QString &a){
-//    com::helper::SettingsHelper::init(a, this);
-//}
-
-//void Settings::Save(){
-//    com::helper::SettingsHelper::saveSettings();
-//}
-
-//void Settings::Load()
-//{
-//    com::helper::SettingsHelper::loadSettings();
-//}
 
 QMap<QString, QString> Settings::toIni(){
     QMap<QString, QString> m;
     m.insert(nameof(gitUrl), gitUrl);
     m.insert(nameof(projectPath), projectPath);
     return m;
+}
+
+bool Settings::isValid()
+{
+    if(this->projectPath.isEmpty()) return false;
+    return true;
 }
 
 void Settings::parseIni(QMap<QString, QString> m){
