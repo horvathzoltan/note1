@@ -290,28 +290,23 @@ void  MainWindow::DisplaySettingsDialog(const QString& title){
         zInfo("Invalid settings");
         return;
     }
-    zInfo("Valid settings");
-    com::helper::SettingsHelper::saveSettings();
+    else{
+        zInfo("Valid settings");
+        com::helper::SettingsHelper::saveSettings();
 
-    // bementeni fájlba
-    setRootPath(settings.projectPath);
-    // return dialog.filename();
-/*
- * mindíg sync:
- * ami fent van, letölti? i/n
- * ami lent van, feltölti? i/n
-*/
+        // bementeni fájlba
+        setRootPath(settings.projectPath);
 
-
-    /*
-     * üres könyvtár -> üres repo = kezdés
-     * üres könyvtár -> van repo = letöltés
-     * tele könyvtár -> üres repo = feltöltés
-     * tele könyvtár -> tele repo = sync
-     *
- */
-
+        /*
+         * üres könyvtár -> üres repo = kezdés
+         * üres könyvtár -> van repo = letöltés
+         * tele könyvtár -> üres repo = feltöltés
+         * tele könyvtár -> tele repo = sync
+        */
+    }
 }
+
+
 void MainWindow::on_SettingsButton_clicked()
 {
     DisplaySettingsDialog(MSG_ADDNEWDIALOG.arg(DIR));

@@ -26,3 +26,34 @@ https://help.github.com/en/github/importing-your-projects-to-github/adding-an-ex
 https://github.com/note55/note1.git
 horvath.zoltan.mobil3@gmail.com
 asERxc5678asERxc56
+
+zoli@shiva:~/common$ git fetch origin
+zoli@shiva:~/common$ git log HEAD..origin/master --oneline
+
+bb346e7 (origin/master, origin/HEAD) Update tst_test2.cpp
+zoli@shiva:~/common$ git log HEAD..origin/master
+commit bb346e7d842f36695774a341f8d1678d7f887733 (origin/master, origin/HEAD)
+Author: Horváth Zoltán <horvath.zoltan.mobil@gmail.com>
+Date:   Tue Feb 25 20:36:39 2020 +0100
+
+    Update tst_test2.cpp
+zoli@shiva:~/common$
+
+
+https://stackoverflow.com/questions/1230084/how-to-have-git-log-show-filenames-like-svn-log-v/1230094
+git fetch origin
+git log --name-status <branch>..<branch> | grep -E '^[A-Z]\b' | sort | uniq
+
+zoli@shiva:~/common$ git fetch origin
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 5 (delta 3), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (5/5), done.
+From https://github.com/horvathzoltan/common
+   482d426..85b8224  master     -> origin/master
+zoli@shiva:~/common$ git log --name-status HEAD..origin/master | grep -E '^[A-Z]\b' | sort | uniq
+M       common/shortguid/shortguid.cpp
+M       common/shortguid/shortguid.h
+M       test2/tst_test2.cpp
+zoli@shiva:~/common$
