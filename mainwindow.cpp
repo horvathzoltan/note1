@@ -298,10 +298,7 @@ void  MainWindow::DisplaySettingsDialog(const QString& title){
         setRootPath(settings.projectPath);
 
         /*
-         * üres könyvtár -> üres repo = kezdés
-         * üres könyvtár -> van repo = letöltés
-         * tele könyvtár -> üres repo = feltöltés
-         * tele könyvtár -> tele repo = sync
+
         */
     }
 }

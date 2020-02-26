@@ -57,3 +57,46 @@ M       common/shortguid/shortguid.cpp
 M       common/shortguid/shortguid.h
 M       test2/tst_test2.cpp
 zoli@shiva:~/common$
+
+beállításokban megadni egy usernevet
+ha egy jegyzet válzozik, az utolsó sorba bele kell tenni ###user;UTCtimestamp
+ha egy jegyzet változik, amikor újat nyit meg, előtte save, commit és push
+ha átnevezi, törli magy újat hoz létre, és van repo, követni kell
+ - git mv, rm, add
+
+beállításokban megadja a könyvtárat,
+megadja a git repot
+ok->
+
+- ha a könyvtár üres-> clone: git clone git@github.com:whatever .
+- ha nem üres->
+    - nincs repo:init, addlocal, commit
+    - van repo:
+        - nincs remote: add remote
+        - van remote: kicserélni a remotet
+    - fetch, checkout, push
+
+
+git init
+git remote add origin PATH/TO/REPO
+git fetch
+git checkout -t origin/master
+*************vagy***************
+git init
+git add .
+git commit -m "First commit"
+git remote add origin PATH/TO/REPO
+//git remote -v
+git push origin master
+
+minden fájlról lokálisan tudni kell, mikor olvastuk utoljára - ez elvileg a fájlrendszerből megvan
+ha egy fájt valaki módosított, akkor az fetch és git log --name-status után látszik -
+    - ezeket le kell szedni mert módosultak
+    - ezeket jelezni kell, hogy módosultak - egészen addig amíg meg nem nyitjuk
+    - elvileg lehet tudni, hogy mik módosultak a fájlon az utolsó olvasás óta
+
+
+
+
+
+
