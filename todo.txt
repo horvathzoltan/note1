@@ -65,17 +65,20 @@ ha átnevezi, törli magy újat hoz létre, és van repo, követni kell
  - git mv, rm, add
 
 beállításokban megadja a könyvtárat,
+ha a könyvtárban már van egy repo, akkor ki kell írni
 megadja a git repot
 ok->
-
+- ha ok és valid ->
 - ha a könyvtár üres-> clone: git clone git@github.com:whatever .
 - ha nem üres->
     - nincs repo:init, addlocal, commit
     - van repo:
         - nincs remote: add remote
-        - van remote: kicserélni a remotet
+        - van remote:
+            - ha egyezik, akkor fasza
+            - ha nem egyezik -> kicserélni a remotet
     - fetch, checkout, push
-
+-mentjük, frissítjük a fát
 
 git init
 git remote add origin PATH/TO/REPO

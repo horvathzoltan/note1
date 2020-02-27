@@ -20,6 +20,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     newfiledialog.cpp \
+    processhelper.cpp \
     settings.cpp \
     settingsdialog.cpp
 
@@ -27,6 +28,7 @@ HEADERS += \
     filenamehelper.h \
     mainwindow.h \
     newfiledialog.h \
+    processhelper.h \
     settings.h \
     settingsdialog.h
 

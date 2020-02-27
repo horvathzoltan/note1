@@ -10,7 +10,7 @@
 #include <QCryptographicHash>
 #include "settingsdialog.h"
 #include "common/helper/settings/settingshelper.h"
-
+#include "processhelper.h"
 
 extern Settings settings;
 
@@ -266,7 +266,8 @@ QString  MainWindow::DisplayNewDirDialog(const QString& title){
 
 void MainWindow::setRootPath(const QString& path){
     //if(settings.projectPath.startsWith(QDir::homePath()))
-    auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
+    //auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
+    auto projectDir = FilenameHelper::GetProjectAbsolutePath();
     if(!QDir(projectDir).exists()){
         QDir(QDir::homePath()).mkpath(projectDir);
     }
@@ -276,35 +277,46 @@ void MainWindow::setRootPath(const QString& path){
     ui->fileTreeView->setRootIndex(idx);
 }
 
-void  MainWindow::DisplaySettingsDialog(const QString& title){
-    if(title.isEmpty()) return;
+int  MainWindow::DisplaySettingsDialog(const QString& title){
+    if(title.isEmpty()) return -1;
     SettingsDialog dialog(this);
     //dialog.setTitle(title);
     dialog.init(&settings);
     //dialog.SetData(settings);
     dialog.exec();
-    if(dialog.result()!=QDialog::Accepted) return;
-    //auto new_settings = dialog.GetData();
-    if(!settings.isValid())
-    {
-        zInfo("Invalid settings");
-        return;
+    return dialog.result();
+}
+
+void MainWindow::SettingsProcess(int r){
+    if(r!=QDialog::Accepted) return;
+    if(!settings.isValid()) return;
+    auto projectpath = FilenameHelper::GetProjectAbsolutePath();
+
+    if(QDir(projectpath).isEmpty()){
+        //git clone git@github.com:whatever .
     }
     else{
-        zInfo("Valid settings");
-        com::helper::SettingsHelper::saveSettings();
+        //git status
+        auto a = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" status)").arg(projectpath));
+        zInfo("pitty");
 
-        // bementeni fájlba
-        setRootPath(settings.projectPath);
-
+        // nincs repo: fatal: not a git repository
+        // van repo: On branch...
+        //git remote -v
         /*
-
-        */
+         * nincs repo: fatal: not a git repository
+         * nincs remote: üres string
+         * van remote: origin  https://github.com/horvathzoltan/common.git (fetch)
+*/
     }
+
+    com::helper::SettingsHelper::saveSettings();
+    setRootPath(settings.projectPath);
 }
 
 
 void MainWindow::on_SettingsButton_clicked()
 {
-    DisplaySettingsDialog(MSG_ADDNEWDIALOG.arg(DIR));
+    auto r = DisplaySettingsDialog(MSG_ADDNEWDIALOG.arg(DIR));
+    SettingsProcess(r);
 }

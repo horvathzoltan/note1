@@ -37,8 +37,8 @@ public:
     static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
 
     QString DisplayNewDirDialog(const QString &title);
-    void DisplaySettingsDialog(const QString& title);
-
+    int DisplaySettingsDialog(const QString& title);
+    void SettingsProcess(int);
     void UpdateEditorState();
     void UpdateActionButtonState(const QModelIndex &index);
     void setActionButtonState(bool x);

@@ -1,12 +1,10 @@
 #include "filenamehelper.h"
+#include "settings.h"
 
 #include <QFileInfo>
 #include <QApplication>
 
-FilenameHelper::FilenameHelper()
-{
-
-}
+extern Settings settings;
 
 QString FilenameHelper::normalaizedir(QString dir)
 {
@@ -24,9 +22,11 @@ QString FilenameHelper::GetIni()
     return applicationName()+".ini";
 }
 
-//QDir FilenameHelper::GetAbsoluteDir(const QString &oldfn){
-//    return QFileInfo(oldfn).absoluteDir();
-//}
+QString FilenameHelper::GetProjectAbsolutePath(){
+    //return QDir(QDir::homePath()).filePath(settings.projectPath);
+    auto r = QDir::home().filePath(settings.projectPath);
+    return r;//QDir(QDir::homePath()).filePath(settings.projectPath);
+}
 
 //QString FilenameHelper::ChangeFile(const QString &oldfn, const QString &fn){
 //    return GetAbsoluteDir(oldfn).filePath(fn);

@@ -3,13 +3,18 @@
 #include <QString>
 #include <QDir>
 
+#ifdef Q_OS_LINUX
+ #define NEWLINE "\n"
+#elif defined(Q_OS_WIN)
+ #define NEWLINE "\r\n"
+#endif
+
 class FilenameHelper
 {
 public:
-    FilenameHelper();
     static QString normalaizedir(QString dir);
     static QString GetIni();
-//    static QDir GetAbsoluteDir(const QString &oldfn);
+    static QString GetProjectAbsolutePath();
     //    static QString ChangeFile(const QString &oldfn, const QString &fn);
     static QString applicationName();
 };
