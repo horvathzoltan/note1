@@ -302,6 +302,7 @@ void MainWindow::SettingsProcess(int r){
         auto a = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" status)").arg(projectpath));
         if(a.startsWith(QStringLiteral("fatal: not a git repository"))){
             //init, addlocal, commit
+            auto c = ProcessHelper::Execute(QStringList{});
             /*
              * git init
 git add .
