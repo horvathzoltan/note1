@@ -102,10 +102,10 @@ void MainWindow::Save(const QModelIndex &index){
 
 void MainWindow::Load(const QModelIndex &index)
 {
+    if(model->isDir(index)) return;
     Save(model_index);
     Rename(model_index, ui->filenameEdit->text());
 
-    if(model->isDir(index)) return;
     auto filepath = model->filePath(index);
     auto filename = model->fileName(index);
     auto txt = com::helper::FileHelper::load(filepath);
@@ -120,6 +120,14 @@ void MainWindow::Load(const QModelIndex &index)
 
 QString MainWindow::GetHash(const QString &txt){
     return QString(QCryptographicHash::hash(txt.toUtf8(),QCryptographicHash::Md5).toHex());
+}
+
+/*fileTreeView events*/
+void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
+{
+    UpdateActionButtonState(index);
+    auto a = GetRepoURL(index);
+    ui->repolabel->setText(a);
 }
 
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
@@ -251,10 +259,7 @@ void MainWindow::setActionButtonState(bool x){
     ui->deleteButton->setEnabled(x);
 }
 
-void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
-{
-    UpdateActionButtonState(index);
-}
+
 
 QString  MainWindow::DisplayNewDirDialog(const QString& title){
     if(title.isEmpty()) return QString();
@@ -300,7 +305,8 @@ void MainWindow::SettingsProcess(int r){
     else{
         //git status
         auto a = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" status)").arg(projectpath));
-        if(a.startsWith(QStringLiteral("fatal: not a git repository"))){
+        //if(a.exitCode!=0) return;
+        if(a.stdErr.startsWith(QStringLiteral("fatal: not a git repository"))){
             //init, addlocal, commit
             auto c = ProcessHelper::Execute(QStringList{});
             /*
@@ -314,11 +320,11 @@ git push origin master
             zInfo("create git repo");
             isOk = true;
         }
-        else if(a.startsWith(QStringLiteral("On branch"))){
+        else if(a.stdOut.startsWith(QStringLiteral("On branch"))){
             zInfo("existing repo");
             auto b = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(projectpath));
-            if(b.startsWith(QStringLiteral("origin"))){
-                auto bl= com::helper::StringHelper::toStringList(b);
+            if(b.stdOut.startsWith(QStringLiteral("origin"))){
+                auto bl= com::helper::StringHelper::toStringList(b.stdOut);
                 QString fetch_url, push_url;
                 foreach (auto b1, bl) {
                    auto b2 = b1.split(' ');
@@ -362,4 +368,43 @@ void MainWindow::on_SettingsButton_clicked()
 {
     auto r = DisplaySettingsDialog(MSG_ADDNEWDIALOG.arg(DIR));
     SettingsProcess(r);
+}
+
+/*
+ * //git ls-tree --full-tree --name-only -r HEAD
+//git ls-files --error-unmatch common.pri
+// git  rev-parse --show-toplevel
+//git -C /home/zoli/common/test2/ rev-parse --show-toplevel
+*/
+QString MainWindow::GetRepoURL(const QModelIndex &index){
+    auto filepath = model->filePath(index);
+    auto fileparent = model->fileInfo(index).absolutePath();
+
+    auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
+    if(out.exitCode!=0) return QString();
+    if(out.stdOut.isEmpty()) return QString();
+    QString rootpath = FilenameHelper::GetFirstRow(out.stdOut);
+    QString file;
+
+    if(!model->isDir(index)){
+        out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
+        if(out.exitCode!=0) return QString();
+        if(out.stdOut.isEmpty()) return QString();
+        file = FilenameHelper::GetFirstRow(out.stdOut);
+    }
+
+    out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(rootpath));
+    if(out.exitCode==0){
+        auto bl= com::helper::StringHelper::toStringList(out.stdOut);
+        QString fetch_url, push_url;
+        foreach (auto b1, bl) {
+           auto b2 = FilenameHelper::toStringList(b1);
+           //auto b2 = b1.split(' ');
+           if(b2.length()<3) continue;
+           if(b2[2]=="(fetch)") fetch_url = b2[1];
+           if(b2[2]=="(push)") push_url = b2[1];
+        }
+        return fetch_url+":"+file;
+    }
+    return rootpath+":"+file;
 }

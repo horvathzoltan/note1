@@ -45,6 +45,7 @@ public:
     void setEditorState(bool x);
     void Save();
     void setRootPath(const QString &path);
+    QString GetRepoURL(const QModelIndex &index);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();

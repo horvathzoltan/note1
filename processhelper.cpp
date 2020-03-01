@@ -4,29 +4,43 @@
 
 const QString ProcessHelper::SEPARATOR = NEWLINE+QStringLiteral("stderr")+NEWLINE;
 
-QString ProcessHelper::Out::ToString(){
-    if(stderr.isEmpty()) return stdout;
-    return stdout+SEPARATOR+stderr;
+QString ProcessHelper::Output::ToString(){
+    QString e;
+
+    if(!stdOut.isEmpty())
+    {
+        if(!e.isEmpty()) e+=SEPARATOR;
+        e+=stdOut;
+    }
+    if(!stdErr.isEmpty())
+    {
+        if(!e.isEmpty()) e+=SEPARATOR;
+        e+=stdErr;
+    }
+    if(!e.isEmpty()) e+=SEPARATOR;
+    e+=QStringLiteral("exitCode: %1").arg(exitCode);
+    return e;
 }
 
-ProcessHelper::Out ProcessHelper::Execute2(const QString& cmd){
+ProcessHelper::Output ProcessHelper::Execute(const QString& cmd){
     QProcess process;
     process.start(cmd);
     process.waitForFinished(-1); // will wait forever until finished
-    return {process.readAllStandardOutput(), process.readAllStandardError()};
+    return {process.readAllStandardOutput(), process.readAllStandardError(), process.exitCode()};
 }
 
-QString ProcessHelper::Execute(const QString& cmd){
-    return Execute2(cmd).ToString();
-}
+//QString ProcessHelper::Execute(const QString& cmd){
+//    return Execute2(cmd).ToString();
+//}
 
 QString ProcessHelper::Execute(const QStringList& cmds){
-    Out e;
+    Output e;
 
     foreach(auto cmd, cmds){
-        auto r = Execute2(cmd);
-        e.stdout += r.stdout;
-        e.stderr += r.stderr;
+        auto r = Execute(cmd);
+        e.stdOut += r.stdOut;
+        e.stdErr += r.stdErr;
+        e.exitCode = r.exitCode;
     }
     return e.ToString();
 }

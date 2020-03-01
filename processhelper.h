@@ -7,20 +7,20 @@
 
 class ProcessHelper
 {
-    struct Out
+    struct Output
     {
     public:
-        QString stdout;
-        QString stderr;
-
+        QString stdOut;
+        QString stdErr;
+        int exitCode;
         QString ToString();
     };
 public:
     static const QString SEPARATOR;
 
-    static QString Execute(const QString& cmd);    
+    //static QString Execute(const QString& cmd);
     static QString Execute(const QStringList &cmds);
-    static Out Execute2(const QString &cmd);
+    static Output Execute(const QString &cmd);
 };
 
 #endif // PROCESSHELPER_H

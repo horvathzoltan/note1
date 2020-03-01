@@ -17,6 +17,8 @@ public:
     static QString GetProjectAbsolutePath();
     //    static QString ChangeFile(const QString &oldfn, const QString &fn);
     static QString applicationName();
+    static QString GetFirstRow(const QString &a);
+    static QStringList toStringList(const QString &s);
 };
 
 #endif // FILENAMEHELPER_H

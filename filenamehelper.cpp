@@ -31,5 +31,16 @@ QString FilenameHelper::GetProjectAbsolutePath(){
 //QString FilenameHelper::ChangeFile(const QString &oldfn, const QString &fn){
 //    return GetAbsoluteDir(oldfn).filePath(fn);
 //}
+//   2
+// abcdef
+QString FilenameHelper::GetFirstRow(const QString & a){
+    int ix = a.indexOf('\n');
+    if(ix==-1) return a;
+    if(ix>0&&a[ix-1]=='\r') ix--;
+    return a.left(ix);
+}
 
+QStringList FilenameHelper::toStringList(const QString &s){
+    return s.split(QRegExp(QStringLiteral("\\t|\\ ")), QString::SkipEmptyParts);
+}
 
