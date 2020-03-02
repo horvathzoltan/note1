@@ -380,25 +380,28 @@ QString MainWindow::GetRepoURL(const QModelIndex &index){
     auto filepath = model->filePath(index);
     auto fileparent = model->fileInfo(index).absolutePath();
 
+
     auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
     if(out.exitCode!=0) return QString();
     if(out.stdOut.isEmpty()) return QString();
-    QString rootpath = FilenameHelper::GetFirstRow(out.stdOut);
+    QString rootpath = com::helper::StringHelper::GetFirstRow(out.stdOut);
     QString file;
 
     if(!model->isDir(index)){
         out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
         if(out.exitCode!=0) return QString();
         if(out.stdOut.isEmpty()) return QString();
-        file = FilenameHelper::GetFirstRow(out.stdOut);
+        file = com::helper::StringHelper::GetFirstRow(out.stdOut);
     }
 
     out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(rootpath));
     if(out.exitCode==0){
         auto bl= com::helper::StringHelper::toStringList(out.stdOut);
+        static QRegularExpression r1(com::helper::StringHelper::join({'\t', ' '}, '|'));
+
         QString fetch_url, push_url;
         foreach (auto b1, bl) {
-           auto b2 = FilenameHelper::toStringList(b1);
+           auto b2 = com::helper::StringHelper::toStringList(b1, r1);
            //auto b2 = b1.split(' ');
            if(b2.length()<3) continue;
            if(b2[2]=="(fetch)") fetch_url = b2[1];

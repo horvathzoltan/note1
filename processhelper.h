@@ -3,8 +3,6 @@
 
 #include <QString>
 
-
-
 class ProcessHelper
 {
     struct Output

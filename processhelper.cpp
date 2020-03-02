@@ -1,5 +1,5 @@
 #include "processhelper.h"
-#include "filenamehelper.h"
+#include "common/helper/string/stringhelper.h"
 #include <QProcess>
 
 const QString ProcessHelper::SEPARATOR = NEWLINE+QStringLiteral("stderr")+NEWLINE;
