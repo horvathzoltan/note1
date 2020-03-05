@@ -98,7 +98,35 @@ ha egy fájt valaki módosított, akkor az fetch és git log --name-status után
     - ezeket jelezni kell, hogy módosultak - egészen addig amíg meg nem nyitjuk
     - elvileg lehet tudni, hogy mik módosultak a fájlon az utolsó olvasás óta
 
+****************-
 
+add repo ->
+validáció:
+ - az aktuális model index:
+    - ha könyvtár (külön nem kell hozzáadni)
+        - ha nem nem olyan könyvtárban van, ami repoban van ( git rev-parse --show-toplevel)
+        akkor új repot lehet létrehozni (helyi és távoli)
+            - url, passwd, user  dialog
+            - url, passwd, user  - megjegyez
+        - ha van toplevel, akkor return;
+    - fájl
+        - ha repoban van és még nincs hozzáadva:
+            hozzáad
+       - egyébként return;
+művelet: hozzá kell adni a fájlt a repohoz, commit, amjd push
+
+addrepovalidation->
+    - ha az aktuális index a fentieknek eleget tesz, ok, ha nem false
+
+clone repo ->
+meg kell adni egy repot,
+- url, passwd, user  dialog
+- ha ilyen néven nincsen még könyvtár
+    amit leklónoz a proj könyvtárban
+- url, passwd, user   megjegyez
+
+git@github.com:horvathzoltan/common.git - common könyvtár van-e
+git -C /home/zoli/cmn2/a clone git@github.com:horvathzoltan/3dplots.git
 
 
 

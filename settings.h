@@ -8,7 +8,7 @@
 struct Settings : public com::helper::ISettings
 {
     QString projectPath;
-    QString gitUrl, gitUser, gitPasswd;
+   // QString gitUrl, gitUser, gitPasswd;
 public:
     Settings();
 //    void Save();

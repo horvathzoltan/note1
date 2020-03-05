@@ -56,18 +56,18 @@ void SettingsDialog::init(Settings *s)
 void SettingsDialog::SetData(){
     if(!isInited) return;
     ui->projectPathEdit->setText(s->projectPath);
-    ui->gitUrlEdit->setText(s->gitUrl);
-    ui->gitUserEdit->setText(s->gitUser);
-    ui->gitPasswdEdit->setText(s->gitPasswd);
+//    ui->gitUrlEdit->setText(s->gitUrl);
+//    ui->gitUserEdit->setText(s->gitUser);
+//    ui->gitPasswdEdit->setText(s->gitPasswd);
 }
 
 void SettingsDialog::GetData(){
     if(!isInited) return;
     s->projectPath = FilenameHelper::normalaizedir(ui->projectPathEdit->text());
-    s->gitUrl = ui->gitUrlEdit->text();
-    // teszt ha nem elérhető
-    s->gitUser = ui->gitUserEdit->text();
-    s->gitPasswd = ui->gitPasswdEdit->text();
+//    s->gitUrl = ui->gitUrlEdit->text();
+//    // teszt ha nem elérhető
+//    s->gitUser = ui->gitUserEdit->text();
+//    s->gitPasswd = ui->gitPasswdEdit->text();
     // teszt ha ok
 }
 

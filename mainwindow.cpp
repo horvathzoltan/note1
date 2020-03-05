@@ -298,66 +298,66 @@ void MainWindow::SettingsProcess(int r){
     if(!settings.isValid()) return;
     auto projectpath = FilenameHelper::GetProjectAbsolutePath();
 
-    bool isOk = false;
-    if(QDir(projectpath).isEmpty()){
-        //git clone git@github.com:whatever .
-    }
-    else{
-        //git status
-        auto a = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" status)").arg(projectpath));
-        //if(a.exitCode!=0) return;
-        if(a.stdErr.startsWith(QStringLiteral("fatal: not a git repository"))){
-            //init, addlocal, commit
-            auto c = ProcessHelper::Execute(QStringList{});
-            /*
-             * git init
-git add .
-git commit -m "First commit"
-git remote add origin PATH/TO/REPO
-//git remote -v
-git push origin master
-*/
-            zInfo("create git repo");
-            isOk = true;
-        }
-        else if(a.stdOut.startsWith(QStringLiteral("On branch"))){
-            zInfo("existing repo");
-            auto b = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(projectpath));
-            if(b.stdOut.startsWith(QStringLiteral("origin"))){
-                auto bl= com::helper::StringHelper::toStringList(b.stdOut);
-                QString fetch_url, push_url;
-                foreach (auto b1, bl) {
-                   auto b2 = b1.split(' ');
-                   if(b2.length()<3) continue;
-                   if(b2[2]=="(fetch)") fetch_url = b2[1];
-                   if(b2[2]=="(push)") push_url = b2[1];
-                }
-                if(fetch_url!=push_url){
-                    zInfo("push and fetch urls are differ");
-                }
-                if(fetch_url==settings.gitUrl){
-                    zInfo("repo ok");
-                    isOk = true;
-                }
-                else
-                {
-                    zInfo("repo and settings urls are differ");
-                }
-            }
-            else{ // no remote repo ->git remote add origin PATH/TO/REPO
-                zInfo("no origin");
-                isOk = true;
-            }
-        }
-        else{
-            zInfo("cannot use existing repo");
-        }
+//    bool isOk = false;
+//    if(QDir(projectpath).isEmpty()){
+//        //git clone git@github.com:whatever .
+//    }
+//    else{
+//        //git status
+//        auto a = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" status)").arg(projectpath));
+//        //if(a.exitCode!=0) return;
+//        if(a.stdErr.startsWith(QStringLiteral("fatal: not a git repository"))){
+//            //init, addlocal, commit
+//            auto c = ProcessHelper::Execute(QStringList{});
+//            /*
+//             * git init
+//git add .
+//git commit -m "First commit"
+//git remote add origin PATH/TO/REPO
+////git remote -v
+//git push origin master
+//*/
+//            zInfo("create git repo");
+//            isOk = true;
+//        }
+//        else if(a.stdOut.startsWith(QStringLiteral("On branch"))){
+//            zInfo("existing repo");
+//            auto b = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(projectpath));
+//            if(b.stdOut.startsWith(QStringLiteral("origin"))){
+//                auto bl= com::helper::StringHelper::toStringList(b.stdOut);
+//                QString fetch_url, push_url;
+//                foreach (auto b1, bl) {
+//                   auto b2 = b1.split(' ');
+//                   if(b2.length()<3) continue;
+//                   if(b2[2]=="(fetch)") fetch_url = b2[1];
+//                   if(b2[2]=="(push)") push_url = b2[1];
+//                }
+//                if(fetch_url!=push_url){
+//                    zInfo("push and fetch urls are differ");
+//                }
+//                if(fetch_url==settings.gitUrl){
+//                    zInfo("repo ok");
+//                    isOk = true;
+//                }
+//                else
+//                {
+//                    zInfo("repo and settings urls are differ");
+//                }
+//            }
+//            else{ // no remote repo ->git remote add origin PATH/TO/REPO
+//                zInfo("no origin");
+//                isOk = true;
+//            }
+//        }
+//        else{
+//            zInfo("cannot use existing repo");
+//        }
 
-        if(isOk){
-            //- fetch, checkout, push
-        }
+//        if(isOk){
+//            //- fetch, checkout, push
+//        }
 
-    }
+//    }
     //-mentjük, frissítjük a fát
     com::helper::SettingsHelper::saveSettings();
     setRootPath(settings.projectPath);
