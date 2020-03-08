@@ -161,9 +161,16 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="addRepoButton">
+        <widget class="QPushButton" name="addToRepoButton">
          <property name="text">
-          <string>AddRepo</string>
+          <string>AddToRepo</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="cloneButton">
+         <property name="text">
+          <string>Clone</string>
          </property>
         </widget>
        </item>

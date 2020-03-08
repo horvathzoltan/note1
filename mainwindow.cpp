@@ -127,7 +127,9 @@ void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 {
     UpdateActionButtonState(index);
     auto a = GetRepoURL(index);
-    ui->repolabel->setText(a);
+    UpdateGitActionButtonState(a, index);
+
+    ui->repolabel->setText(a);    
 }
 
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
@@ -380,17 +382,17 @@ QString MainWindow::GetRepoURL(const QModelIndex &index){
     auto filepath = model->filePath(index);
     auto fileparent = model->fileInfo(index).absolutePath();
 
-
     auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
     if(out.exitCode!=0) return QString();
     if(out.stdOut.isEmpty()) return QString();
     QString rootpath = com::helper::StringHelper::GetFirstRow(out.stdOut);
-    QString file;
+    if(rootpath.isEmpty()) return QString();
 
+    QString file;
     if(!model->isDir(index)){
         out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
-        if(out.exitCode!=0) return QString();
-        if(out.stdOut.isEmpty()) return QString();
+        if(out.exitCode!=0) return rootpath;
+        if(out.stdOut.isEmpty()) return rootpath;
         file = com::helper::StringHelper::GetFirstRow(out.stdOut);
     }
 
@@ -406,8 +408,80 @@ QString MainWindow::GetRepoURL(const QModelIndex &index){
            if(b2.length()<3) continue;
            if(b2[2]=="(fetch)") fetch_url = b2[1];
            if(b2[2]=="(push)") push_url = b2[1];
+        }        
+        if(!fetch_url.isEmpty())
+        {
+            if(file.isEmpty())
+                return fetch_url;
+            return fetch_url+'|'+file;
         }
-        return fetch_url+":"+file;
     }
-    return rootpath+":"+file;
+    if(file.isEmpty())
+        return rootpath;
+    return rootpath+'|'+file;
 }
+
+void MainWindow::on_addToRepoButton_clicked()
+{
+    zTrace();
+}
+
+void MainWindow::on_cloneButton_clicked()
+{
+    zTrace();
+}
+
+void MainWindow::UpdateGitActionButtonState(const QString &s, const QModelIndex &index){
+    if(s.isEmpty())
+    { // nem git repo
+
+        if(model->isDir(index))
+        {
+            ui->addToRepoButton->setEnabled(false);
+            if(QDir(model->filePath(index)).isEmpty())  // ha a könyvtár üres, lehet bele klónozni
+            {
+                ui->cloneButton->setEnabled(true);
+            }
+            else
+            {
+                ui->cloneButton->setEnabled(false);
+            }
+        }
+        else // ha fájl, nem lehet bele klónozni
+        {
+            ui->addToRepoButton->setEnabled(false);
+            ui->cloneButton->setEnabled(false);
+        }
+
+    }
+    else if(s.startsWith(QDir::separator()) || s.startsWith('g'))
+    { // van remote
+        ui->cloneButton->setEnabled(false);
+
+        if(model->isDir(index))
+        {
+            ui->addToRepoButton->setEnabled(false);
+        }
+        else
+        {
+            if(!s.contains('|'))
+            {
+                ui->addToRepoButton->setEnabled(true);
+            }
+            else
+            {
+                ui->addToRepoButton->setEnabled(false);
+            }
+        }
+
+
+    }
+    else
+    {
+        ui->addToRepoButton->setEnabled(false);
+        ui->cloneButton->setEnabled(false);
+    }
+}
+
+
+

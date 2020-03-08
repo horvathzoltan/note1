@@ -46,6 +46,8 @@ public:
     void Save();
     void setRootPath(const QString &path);
     QString GetRepoURL(const QModelIndex &index);
+    bool AddRepoValidation(const QModelIndex &index);
+    void UpdateGitActionButtonState(const QString &s, const QModelIndex &index);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();
@@ -57,6 +59,8 @@ private slots:
     void on_timerupdate();
     void on_SettingsButton_clicked();
 
+    void on_addToRepoButton_clicked();
+    void on_cloneButton_clicked();
 
 private:
     Ui::MainWindow *ui;

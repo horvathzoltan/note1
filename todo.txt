@@ -100,7 +100,7 @@ ha egy fájt valaki módosított, akkor az fetch és git log --name-status után
 
 ****************-
 
-add repo ->
+add (to repo) ->
 validáció:
  - az aktuális model index:
     - ha könyvtár (külön nem kell hozzáadni)
