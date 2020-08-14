@@ -69,6 +69,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *w)
 {
+    Q_UNUSED( errlevel )
+    Q_UNUSED( loci )
+    Q_UNUSED( st )
+
     reinterpret_cast<MainWindow*>(w)->statusBar()->showMessage(msg, 2000);
 }
 
@@ -153,7 +157,8 @@ const QModelIndex MainWindow::getIndex(){
 
 
 
-void MainWindow::closeEvent(QCloseEvent *event) {   
+void MainWindow::closeEvent(QCloseEvent *event) {
+    Q_UNUSED (event)
     Save();
 }
 
@@ -214,7 +219,12 @@ void MainWindow::on_addNoteButton_clicked()
     }
 
     QFile f(newfile);
-    if(f.open(QIODevice::NewOnly| QIODevice::Text)){
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+    auto isok = f.open(QIODevice::NewOnly| QIODevice::Text);
+#else
+    auto isok = !QFileInfo::exists(newfile) && f.open(QIODevice::Text);
+#endif
+    if(isok){
         f.close();
         zInfo(MSG_ADDNEW.arg(FILE).arg(newfile));
     }
@@ -273,6 +283,7 @@ QString  MainWindow::DisplayNewDirDialog(const QString& title){
 }
 
 void MainWindow::setRootPath(const QString& path){
+    Q_UNUSED (path)
     //if(settings.projectPath.startsWith(QDir::homePath()))
     //auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
     auto projectDir = FilenameHelper::GetProjectAbsolutePath();

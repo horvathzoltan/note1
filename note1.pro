@@ -52,17 +52,41 @@ BUILD = release
 COMMON = common
 COMMON_LIBS = $$COMMON"lib"
 
+
 equals(BUILD,debug) {
     #message( "build is _ debug" )
     COMMON_LIBS = $$COMMON_LIBS"_debug"
 }
 
-!contains(QMAKE_TARGET.arch, x86_64) {
-    !contains(QT_ARCH, x86_64) {
-        COMMON_LIBS = $$COMMON_LIBS"_32"
-    }
+equals(BUILD,release){
+    COMMON_LIBS = $$COMMON_LIBS"_release"
 }
 
+#equals(BUILD,release) {
+#    #message( "build is _ release" )
+#}
+#message( "QT_ARCH= "$$QT_ARCH )
+#message( "QMAKE_TARGET.arch= "$$QMAKE_TARGET.arch )
+
+equals(QT_ARCH, x86_64){
+    COMMON_LIBS = $$COMMON_LIBS"_64"
+}
+
+equals(QT_ARCH, x86){
+    COMMON_LIBS = $$COMMON_LIBS"_32"
+}
+
+equals(QT_ARCH, arm){
+    COMMON_LIBS = $$COMMON_LIBS"_arm"
+}
+
+message( "architecture = "$$QT_ARCH )
+message( "commonlibs folder = "$$COMMON_LIBS )
+
+#unix:HOME = $$system(echo $HOME)
+#win32:HOME = $$system(echo %userprofile%)
+
+# INSTALLDIR = $$COMMON_LIBS
 COMMON_LIBS_FULLPATH = $$shell_path($$HOME/$$COMMON_LIBS)
 COMMON_INCLUDE_FULLPATH = $$shell_path($$HOME/$$COMMON)
 
