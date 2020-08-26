@@ -14,9 +14,9 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
-    QFileSystemModel *model;
-    QModelIndex model_index;
-    QString model_hash;
+    //QFileSystemModel *_model;
+    //QModelIndex _model_index;
+    //QString _model_hash;
     static const QString MSG_ADDNEW;
     static const QString MSG_ADDNEWDIALOG;
     static const QString MSG_FAILEDTO;
@@ -25,29 +25,32 @@ private:
     static const QString DELETE;
     static const QString CREATE;
     static const int AUTOSAVE_SEC;
-    QTimer autosave_timer;
+    QTimer _autosave_timer;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void Load(const QModelIndex &index);
-    void Rename(const QModelIndex &index, const QString &fn);
-    const QModelIndex getIndex();
-    void Save(const QModelIndex &index);
-    QString GetHash(const QString &txt);
+
+    const QModelIndex getFileIndex();
+
+    //QString GetHash(const QString &txt);
     static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
 
     QString DisplayNewDirDialog(const QString &title);
     int DisplaySettingsDialog(const QString& title);
-    void SettingsProcess(int);
+    void SettingsProcess();
     void UpdateEditorState();
     void UpdateActionButtonState(const QModelIndex &index);
     void setActionButtonState(bool x);
     void setEditorState(bool x);
-    void Save();
-    void setRootPath(const QString &path);
-    QString GetRepoURL(const QModelIndex &index);
+    void updateFileTreeView();
+    //QString GetRepoURL(const QModelIndex &index);
     bool AddRepoValidation(const QModelIndex &index);
-    void UpdateGitActionButtonState(const QString &s, const QModelIndex &index);
+    void updateGitActionButtonState(const QString &s, const QModelIndex &index);
+    void Open(const QModelIndex& index);
+    void Save();
+    void updateRepoButton(const QString &giturl, const QModelIndex &index);
+    void updateCloneButton(const QString &giturl, const QModelIndex &index);
+    int DisplayCloneDialog(const QString &title);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();
@@ -56,7 +59,7 @@ private slots:
     void on_deleteButton_clicked();
     void on_addNoteButton_clicked();
     void on_fileTreeView_clicked(const QModelIndex &index);
-    void on_timerupdate();
+    void on_autosave_timer_timeout();
     void on_SettingsButton_clicked();
 
     void on_addToRepoButton_clicked();

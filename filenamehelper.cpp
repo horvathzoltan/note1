@@ -23,9 +23,8 @@ QString FilenameHelper::GetIni()
 }
 
 QString FilenameHelper::GetProjectAbsolutePath(){
-    //return QDir(QDir::homePath()).filePath(settings.projectPath);
     auto r = QDir::home().filePath(settings.projectPath);
-    return r;//QDir(QDir::homePath()).filePath(settings.projectPath);
+    return r;
 }
 
 //QString FilenameHelper::ChangeFile(const QString &oldfn, const QString &fn){

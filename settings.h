@@ -1,5 +1,5 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef LSETTINGS_H
+#define LSETTINGS_H
 
 #include <QString>
 #include "common/helper/settings/isettings.h"

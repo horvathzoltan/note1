@@ -16,7 +16,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    clonedialog.cpp \
+    filehelper.cpp \
     filenamehelper.cpp \
+    filesystemmodelhelper.cpp \
+    githelper.cpp \
     main.cpp \
     mainwindow.cpp \
     newfiledialog.cpp \
@@ -25,7 +29,11 @@ SOURCES += \
     settingsdialog.cpp
 
 HEADERS += \
+    clonedialog.h \
+    filehelper.h \
     filenamehelper.h \
+    filesystemmodelhelper.h \
+    githelper.h \
     mainwindow.h \
     newfiledialog.h \
     processhelper.h \
@@ -33,6 +41,7 @@ HEADERS += \
     settingsdialog.h
 
 FORMS += \
+    clonedialog.ui \
     mainwindow.ui \
     newfiledialog.ui \
     settingsdialog.ui

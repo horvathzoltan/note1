@@ -1,17 +1,21 @@
+#include "clonedialog.h"
 #include "filenamehelper.h"
+#include "filesystemmodelhelper.h"
+#include "githelper.h"
 #include "mainwindow.h"
 #include "mainwindow.h"
 #include "newfiledialog.h"
 #include "settings.h"
 #include "ui_mainwindow.h"
-#include "common/helper/file/filehelper.h"
+//#include "common/helper/file/filehelper.h"
 #include <QFileSystemModel>
 #include "common/logger/log.h"
-#include <QCryptographicHash>
+//#include <QCryptographicHash>
 #include "settingsdialog.h"
 #include "common/helper/settings/settingshelper.h"
 #include "processhelper.h"
 #include "common/helper/string/stringhelper.h"
+#include "filesystemmodelhelper.h"
 
 extern Settings settings;
 
@@ -30,40 +34,21 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    model = new QFileSystemModel;
-    model_index = QModelIndex();
-    model_hash = QString();
-    // auto projectDir= QDir(settings.projectPath);
-    //auto homeDir = QDir::homePath();
-
-//    auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
-//    if(!QDir(projectDir).exists()){
-//        QDir(QDir::homePath()).mkpath(projectDir);
-//    }
-
-//    model->setRootPath(projectDir);
-    setRootPath(settings.projectPath);
-    //QModelIndex idx = model->index(projectDir);
-//    ui->fileTreeView->setModel(model);
-//    ui->fileTreeView->setRootIndex(idx);
-
-    for (int i = 1; i < model->columnCount(); ++i)
+    for (int i = 1; i < FileSystemModelHelper::columnCount(); ++i)
         ui->fileTreeView->hideColumn(i);
-
     UpdateEditorState();
-
-    //QTimer *timer = new QTimer(this);
-    connect(&autosave_timer, &QTimer::timeout, this, &MainWindow::on_timerupdate);
-
+    connect(&_autosave_timer, &QTimer::timeout, this, &MainWindow::on_autosave_timer_timeout);
 }
 
-void MainWindow::on_timerupdate(){
-    Save();
+void MainWindow::on_autosave_timer_timeout(){
+    auto fn = ui->filenameEdit->text();
+    auto txt = ui->plainTextEdit->toPlainText();
+    FileSystemModelHelper::Save(fn, txt);
 }
 
 MainWindow::~MainWindow()
 {
-    delete model;
+    //FileSystemModelHelper::uninit();
     delete ui;
 }
 
@@ -77,103 +62,58 @@ void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QStri
 }
 
 
-
-void MainWindow::Rename(const QModelIndex &index, const QString& fn){
-    if(!index.isValid()) return;
-    if(fn.isEmpty()) return;
-    if(model->fileName(index)==fn) return;   
-    auto newfile = model->fileInfo(index).absoluteDir().filePath(fn);
-    if(QFile::exists(newfile)) return;
-    QFile f(model->filePath(index));
-    f.rename(newfile);
-    //zInfo(QStringLiteral("rename: %1->%2 %3").arg(oldfn).arg(fn).arg(isok));
-}
-
-void MainWindow::Save(){
-    Save(model_index);
-    Rename(model_index, ui->filenameEdit->text());
-}
-
-void MainWindow::Save(const QModelIndex &index){
-    if(!index.isValid()) return;
-    auto txt = ui->plainTextEdit->toPlainText();
-    auto hash = GetHash(txt);
-    if(model_hash==hash) return;
-    auto filepath = model->filePath(index);
-    com::helper::FileHelper::save(txt, filepath);
-    zInfo(QStringLiteral("Saved: %1").arg(filepath));
-}
-
-void MainWindow::Load(const QModelIndex &index)
-{
-    if(model->isDir(index)) return;
-    Save(model_index);
-    Rename(model_index, ui->filenameEdit->text());
-
-    auto filepath = model->filePath(index);
-    auto filename = model->fileName(index);
-    auto txt = com::helper::FileHelper::load(filepath);
-    ui->filenameEdit->setText(filename);
-    ui->plainTextEdit->setPlainText(txt);
-    model_index = index;
-    model_hash = GetHash(txt);
-    zInfo(QStringLiteral("Loaded: %1").arg(filename));
-    UpdateEditorState();
-    UpdateActionButtonState(index);
-} 
-
-QString MainWindow::GetHash(const QString &txt){
-    return QString(QCryptographicHash::hash(txt.toUtf8(),QCryptographicHash::Md5).toHex());
-}
-
 /*fileTreeView events*/
 void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 {
     UpdateActionButtonState(index);
-    auto a = GetRepoURL(index);
-    UpdateGitActionButtonState(a, index);
+    auto fileInfo = FileSystemModelHelper::fileInfo(index);
 
-    ui->repolabel->setText(a);    
+    auto giturl = GitHelper::GetRepoURL(fileInfo);
+    updateGitActionButtonState(giturl, index);
+
+    ui->repolabel->setText(giturl);
 }
 
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 {
-    Load(index);
+    Q_UNUSED(index)
+    Save();
+    auto ix = getFileIndex();
+    Open(ix);
 }
 
 void MainWindow::on_EditButton_clicked()
 {
-    auto index = getIndex();
-    if(!index.isValid()) return;
-    if(model_index==index) return;
-    Load(index);
+    Save();
+    auto ix = getFileIndex();
+    Open(ix);
+    UpdateActionButtonState(ix);
 }
 
-const QModelIndex MainWindow::getIndex(){
+const QModelIndex MainWindow::getFileIndex(){
     auto indexes = ui->fileTreeView->selectionModel()->selectedIndexes();
     if (indexes.isEmpty()) return QModelIndex();
     return indexes.at(0);
 }
 
-
-
 void MainWindow::closeEvent(QCloseEvent *event) {
     Q_UNUSED (event)
-    Save();
+    auto fn = ui->filenameEdit->text();
+    auto txt = ui->plainTextEdit->toPlainText();
+    FileSystemModelHelper::Save(fn, txt);
 }
 
 void MainWindow::on_addDirButton_clicked()
 {
-    auto ix = getIndex();
-    //if(!model->isDir(ix)) return;
+    auto ix = getFileIndex();
     auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(DIR));
     if(fn.isEmpty()) return;
     QModelIndex newix;
-    if(model->isDir(ix))
-            newix= model->mkdir(ix, fn);
+    if(FileSystemModelHelper::isDir(ix))
+        newix= FileSystemModelHelper::Mkdir(ix, fn);
     else{
-        auto px = model->parent(ix);
-        newix= model->mkdir(px, fn);
+        auto px = FileSystemModelHelper::parent(ix);
+        newix= FileSystemModelHelper::Mkdir(px, fn);
     }
     if(newix.isValid())
         zInfo(MSG_ADDNEW.arg(DIR).arg(fn))
@@ -185,18 +125,18 @@ void MainWindow::on_addDirButton_clicked()
 
 void MainWindow::on_deleteButton_clicked()
 {
-    auto ix = getIndex();
-    if(!model_index.isValid()) return;
-    if(model_index==ix) return;
-    auto fn = model->fileName(ix);
-    if(model->isDir(ix))
+    auto ix = getFileIndex();
+    if(!FileSystemModelHelper::isValid()) return;
+    if(FileSystemModelHelper::Equals(ix)) return;
+    auto fn = FileSystemModelHelper::fileName(ix);
+    if(FileSystemModelHelper::isDir(ix))
     {
-        if(!model->rmdir(ix))
+        if(!FileSystemModelHelper::Rmdir(ix))
             zInfo(MSG_FAILEDTO.arg(DELETE).arg(DIR).arg(fn))
     }
     else
     {
-        if(!model->remove(ix))
+        if(!FileSystemModelHelper::Remove(ix))
             zInfo(MSG_FAILEDTO.arg(DELETE).arg(FILE).arg(fn))
     }
 }
@@ -204,18 +144,18 @@ void MainWindow::on_deleteButton_clicked()
 
 void MainWindow::on_addNoteButton_clicked()
 {
-    auto ix = getIndex();
+    auto ix = getFileIndex();
     auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(FILE));
     if(fn.isEmpty()) return;
     //auto oldfn = model->filePath(ix);
     QString newfile;
-    if(model->isDir(ix))
+    if(FileSystemModelHelper::isDir(ix))
     {
-         newfile = QDir(model->filePath(ix)).filePath(fn);
+        newfile = QDir(FileSystemModelHelper::filePath(ix)).filePath(fn);
     }
     else
     {
-         newfile = model->fileInfo(ix).absoluteDir().filePath(fn);
+        newfile = FileSystemModelHelper::fileInfo(ix).absoluteDir().filePath(fn);
     }
 
     QFile f(newfile);
@@ -235,7 +175,7 @@ void MainWindow::on_addNoteButton_clicked()
 }
 
 void MainWindow::UpdateEditorState(){
-    if(model_index.isValid()){
+    if(FileSystemModelHelper::isValid()){
         MainWindow::setEditorState(true);
     }else{
         MainWindow::setEditorState(false);
@@ -245,27 +185,35 @@ void MainWindow::UpdateEditorState(){
 void MainWindow::setEditorState(bool x){
     ui->filenameEdit->setEnabled(x);
     ui->plainTextEdit->setEnabled(x);
-    if(x) autosave_timer.start(1000*AUTOSAVE_SEC);
-    else autosave_timer.stop();
+    if(x) _autosave_timer.start(1000*AUTOSAVE_SEC);
+    else _autosave_timer.stop();
 }
 
+void MainWindow::updateFileTreeView()
+{
+    auto m = FileSystemModelHelper::Model();
+    auto ix = FileSystemModelHelper::Index();
+
+    ui->fileTreeView->setModel(m);
+    ui->fileTreeView->setRootIndex(ix);
+}
 
 void MainWindow::UpdateActionButtonState(const QModelIndex &index){
-    if(model_index.isValid()){
-        if(index==model_index){
-            setActionButtonState(false);
-        }
-        else
-        {
-            setActionButtonState(true);
-        }
-    }
-    else
-    {
-        setActionButtonState(true);
-    }
+    auto a =
+        FileSystemModelHelper::isValid() &&
+        !(
+            FileSystemModelHelper::Equals(index) ||
+            FileSystemModelHelper::isDir(index)
+            );
+
+    setActionButtonState(a);
 }
 
+
+///
+/// \brief a szerkesztő actionok buttonjait engedélyezi/tiltja
+/// \param x
+///
 void MainWindow::setActionButtonState(bool x){
     ui->EditButton->setEnabled(x);
     ui->deleteButton->setEnabled(x);
@@ -282,19 +230,13 @@ QString  MainWindow::DisplayNewDirDialog(const QString& title){
     return dialog.filename();
 }
 
-void MainWindow::setRootPath(const QString& path){
-    Q_UNUSED (path)
-    //if(settings.projectPath.startsWith(QDir::homePath()))
-    //auto projectDir = QDir(QDir::homePath()).filePath(settings.projectPath);
-    auto projectDir = FilenameHelper::GetProjectAbsolutePath();
-    if(!QDir(projectDir).exists()){
-        QDir(QDir::homePath()).mkpath(projectDir);
-    }
-    model->setRootPath(projectDir);
-    QModelIndex idx = model->index(projectDir);
-    ui->fileTreeView->setModel(model);
-    ui->fileTreeView->setRootIndex(idx);
-}
+//int  MainWindow::DisplayCloneDialog(const QString& title){
+//    Q_UNUSED(title)
+//    CloneDialog dialog(this);
+//    //dialog.init(&settings);
+//    dialog.exec();
+//    return dialog.result();
+//}
 
 int  MainWindow::DisplaySettingsDialog(const QString& title){
     if(title.isEmpty()) return -1;
@@ -303,134 +245,30 @@ int  MainWindow::DisplaySettingsDialog(const QString& title){
     dialog.init(&settings);
     //dialog.SetData(settings);
     dialog.exec();
-    return dialog.result();
+    return dialog.result();        
 }
 
-void MainWindow::SettingsProcess(int r){
-    if(r!=QDialog::Accepted) return;
+///
+/// \brief Feldolgozza a settingst
+///
+
+void MainWindow::SettingsProcess(){
     if(!settings.isValid()) return;
-    auto projectpath = FilenameHelper::GetProjectAbsolutePath();
-
-//    bool isOk = false;
-//    if(QDir(projectpath).isEmpty()){
-//        //git clone git@github.com:whatever .
-//    }
-//    else{
-//        //git status
-//        auto a = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" status)").arg(projectpath));
-//        //if(a.exitCode!=0) return;
-//        if(a.stdErr.startsWith(QStringLiteral("fatal: not a git repository"))){
-//            //init, addlocal, commit
-//            auto c = ProcessHelper::Execute(QStringList{});
-//            /*
-//             * git init
-//git add .
-//git commit -m "First commit"
-//git remote add origin PATH/TO/REPO
-////git remote -v
-//git push origin master
-//*/
-//            zInfo("create git repo");
-//            isOk = true;
-//        }
-//        else if(a.stdOut.startsWith(QStringLiteral("On branch"))){
-//            zInfo("existing repo");
-//            auto b = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(projectpath));
-//            if(b.stdOut.startsWith(QStringLiteral("origin"))){
-//                auto bl= com::helper::StringHelper::toStringList(b.stdOut);
-//                QString fetch_url, push_url;
-//                foreach (auto b1, bl) {
-//                   auto b2 = b1.split(' ');
-//                   if(b2.length()<3) continue;
-//                   if(b2[2]=="(fetch)") fetch_url = b2[1];
-//                   if(b2[2]=="(push)") push_url = b2[1];
-//                }
-//                if(fetch_url!=push_url){
-//                    zInfo("push and fetch urls are differ");
-//                }
-//                if(fetch_url==settings.gitUrl){
-//                    zInfo("repo ok");
-//                    isOk = true;
-//                }
-//                else
-//                {
-//                    zInfo("repo and settings urls are differ");
-//                }
-//            }
-//            else{ // no remote repo ->git remote add origin PATH/TO/REPO
-//                zInfo("no origin");
-//                isOk = true;
-//            }
-//        }
-//        else{
-//            zInfo("cannot use existing repo");
-//        }
-
-//        if(isOk){
-//            //- fetch, checkout, push
-//        }
-
-//    }
-    //-mentjük, frissítjük a fát
     com::helper::SettingsHelper::saveSettings();
-    setRootPath(settings.projectPath);
+    auto projectDir = FilenameHelper::GetProjectAbsolutePath();
+    FileSystemModelHelper::setRootPath(projectDir);
+    updateFileTreeView();
 }
 
 
 void MainWindow::on_SettingsButton_clicked()
 {
     auto r = DisplaySettingsDialog(MSG_ADDNEWDIALOG.arg(DIR));
-    SettingsProcess(r);
+    if(r!=QDialog::Accepted) return;
+    SettingsProcess();
 }
 
-/*
- * //git ls-tree --full-tree --name-only -r HEAD
-//git ls-files --error-unmatch common.pri
-// git  rev-parse --show-toplevel
-//git -C /home/zoli/common/test2/ rev-parse --show-toplevel
-*/
-QString MainWindow::GetRepoURL(const QModelIndex &index){
-    auto filepath = model->filePath(index);
-    auto fileparent = model->fileInfo(index).absolutePath();
 
-    auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
-    if(out.exitCode!=0) return QString();
-    if(out.stdOut.isEmpty()) return QString();
-    QString rootpath = com::helper::StringHelper::GetFirstRow(out.stdOut);
-    if(rootpath.isEmpty()) return QString();
-
-    QString file;
-    if(!model->isDir(index)){
-        out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
-        if(out.exitCode!=0) return rootpath;
-        if(out.stdOut.isEmpty()) return rootpath;
-        file = com::helper::StringHelper::GetFirstRow(out.stdOut);
-    }
-
-    out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(rootpath));
-    if(out.exitCode==0){
-        auto bl= com::helper::StringHelper::toStringList(out.stdOut);
-        static QRegularExpression r1(com::helper::StringHelper::join({'\t', ' '}, '|'));
-
-        QString fetch_url, push_url;
-        foreach (auto b1, bl) {
-           auto b2 = com::helper::StringHelper::toStringList(b1, r1);
-           //auto b2 = b1.split(' ');
-           if(b2.length()<3) continue;
-           if(b2[2]=="(fetch)") fetch_url = b2[1];
-           if(b2[2]=="(push)") push_url = b2[1];
-        }        
-        if(!fetch_url.isEmpty())
-        {
-            if(file.isEmpty())
-                return fetch_url;
-            return fetch_url+'|'+file;
-        }
-    }
-    if(file.isEmpty())
-        return rootpath;
-    return rootpath+'|'+file;
-}
 
 void MainWindow::on_addToRepoButton_clicked()
 {
@@ -439,59 +277,74 @@ void MainWindow::on_addToRepoButton_clicked()
 
 void MainWindow::on_cloneButton_clicked()
 {
-    zTrace();
+    // ha még nem git könyvtár
+    //zTrace();
+    CloneDialog dialog(this);
+    //dialog.init(&settings);
+    dialog.exec();
+    if(dialog.result() != QDialog::Accepted || !dialog.isValid()) return;
+    QString path = "";
+
+    GitHelper::clone(path, dialog.url(), dialog.user(), dialog.passwd());
 }
 
-void MainWindow::UpdateGitActionButtonState(const QString &s, const QModelIndex &index){
-    if(s.isEmpty())
-    { // nem git repo
+void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &index){
+    auto nab = !FileSystemModelHelper::isDir(index)&&
+             !giturl.isEmpty();
 
-        if(model->isDir(index))
-        {
-            ui->addToRepoButton->setEnabled(false);
-            if(QDir(model->filePath(index)).isEmpty())  // ha a könyvtár üres, lehet bele klónozni
-            {
-                ui->cloneButton->setEnabled(true);
-            }
-            else
-            {
-                ui->cloneButton->setEnabled(false);
-            }
-        }
-        else // ha fájl, nem lehet bele klónozni
-        {
-            ui->addToRepoButton->setEnabled(false);
-            ui->cloneButton->setEnabled(false);
-        }
+    auto ne = !giturl.contains('|');
+    auto dne =  giturl.startsWith('g') && ne;
+    auto cne =  giturl.startsWith(QDir::separator()) && ne;
 
-    }
-    else if(s.startsWith(QDir::separator()) || s.startsWith('g'))
-    { // van remote
-        ui->cloneButton->setEnabled(false);
+    auto e = (nab&&dne)||(nab&&cne);
 
-        if(model->isDir(index))
-        {
-            ui->addToRepoButton->setEnabled(false);
-        }
-        else
-        {
-            if(!s.contains('|'))
-            {
-                ui->addToRepoButton->setEnabled(true);
-            }
-            else
-            {
-                ui->addToRepoButton->setEnabled(false);
-            }
-        }
+    ui->addToRepoButton->setEnabled(e);
+}
 
 
-    }
-    else
-    {
-        ui->addToRepoButton->setEnabled(false);
-        ui->cloneButton->setEnabled(false);
-    }
+void MainWindow::updateCloneButton(const QString &giturl, const QModelIndex &index){
+    auto e =
+        giturl.isEmpty() &&
+        FileSystemModelHelper::isDir(index) &&
+        QDir(FileSystemModelHelper::filePath(index)).isEmpty();
+
+    ui->cloneButton->setEnabled(e);
+}
+
+void MainWindow::updateGitActionButtonState(const QString &giturl, const QModelIndex &index){
+    updateRepoButton(giturl, index);
+    updateCloneButton(giturl, index);
+}
+
+///
+/// \brief menti txt-t, ha kell átnevezi a fájlt a modellen keresztül
+///
+
+void MainWindow::Save(){
+    auto fn =  ui->filenameEdit->text();
+    auto txt = ui->plainTextEdit->toPlainText();
+    FileSystemModelHelper::Save(fn, txt);
+}
+
+///
+/// \brief megnyitja indexet
+///
+/// megnyitja az indexet
+/// -ha valós
+/// -ha file
+/// -ha nincsen megnyitva
+///
+
+void MainWindow::Open(const QModelIndex& index)
+{
+    if(!index.isValid()) return;
+    if(FileSystemModelHelper::isDir(index)) return;
+    if(FileSystemModelHelper::Equals(index)) return;
+    auto filename = FileSystemModelHelper::fileName(index);
+    auto txt2 = FileSystemModelHelper::Load(index);
+    ui->plainTextEdit->setPlainText(txt2);
+    ui->filenameEdit->setText(filename);
+    UpdateEditorState();
 }
 
 
