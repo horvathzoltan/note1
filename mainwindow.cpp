@@ -272,7 +272,7 @@ void MainWindow::on_SettingsButton_clicked()
 
 void MainWindow::on_addToRepoButton_clicked()
 {
-    zTrace();
+    zTrace()
 }
 
 void MainWindow::on_cloneButton_clicked()

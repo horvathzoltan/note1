@@ -2,6 +2,8 @@
 #include "processhelper.h"
 #include "common/helper/string/stringhelper.h"
 #include "filesystemmodelhelper.h"
+#include "common/logger/log.h"
+
 
 /*
  * //git ls-tree --full-tree --name-only -r HEAD
@@ -57,5 +59,6 @@ QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
 }
 
 bool GitHelper::clone(const QString& path, const QString& url, const QString& user, const QString& passwd){
+    zTrace()
     return false;
 }
