@@ -23,3 +23,8 @@ CloneDialog::~CloneDialog()
 {
     delete ui;
 }
+
+bool CloneDialog::isValid()
+{
+    return !(_url.isEmpty() || _passwd.isEmpty() || _user.isEmpty());
+}
