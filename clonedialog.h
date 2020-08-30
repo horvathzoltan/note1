@@ -1,10 +1,11 @@
 #ifndef CLONEDIALOG_H
 #define CLONEDIALOG_H
 
+#include "common/macrofactory/macro.h"
+
 #include <QWidget>
 #include <QDialog>
 
-#define GET(v, name) const decltype(v)& name() const {return v;}
 
 namespace Ui {
 class CloneDialog;
@@ -14,21 +15,23 @@ class CloneDialog : public QDialog
 {
     Q_OBJECT
 
+public:
+    struct Model{
+        public:
+            QString url, user, passwd;
+            bool isValid() const;
+    };
+
 private:
-    QString  _url, _user, _passwd;
+    Ui::CloneDialog *ui;
+    Model _model;
 public:        
     CloneDialog(QWidget *parent);
-    ~CloneDialog();
-    bool isValid();
-    //const decltype(_url)& url() const {return _url;}
-    //const QString& user() const {return _user;}
-    //const QString& passwd() const {return _passwd;}
-    GET(_url, url)
-    GET(_user, user)
-    GET(_passwd, passwd)
-
-private:    
-    Ui::CloneDialog *ui;
+    ~CloneDialog();    
+    GET(_model, model)
+    void setTitle(QString a);
+private slots:
+    void on_CloneDialog_accepted();
 };
 
 #endif // CLONEDIALOG_H

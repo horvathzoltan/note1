@@ -15,8 +15,6 @@ CloneDialog::CloneDialog(QWidget *parent) :
     ui(new Ui::CloneDialog)
 {
     ui->setupUi(this);
-//    isInited=false;
-//    filedialog=nullptr;
 }
 
 CloneDialog::~CloneDialog()
@@ -24,7 +22,19 @@ CloneDialog::~CloneDialog()
     delete ui;
 }
 
-bool CloneDialog::isValid()
+void CloneDialog::setTitle(QString a){
+    setWindowTitle(a);
+}
+
+
+bool CloneDialog::Model::isValid() const
 {
-    return !(_url.isEmpty() || _passwd.isEmpty() || _user.isEmpty());
+    return !(url.isEmpty() || passwd.isEmpty() || user.isEmpty());
+}
+
+void CloneDialog::on_CloneDialog_accepted()
+{
+    _model.url = ui->gitUrlEdit->text();
+    _model.user = ui->gitUserEdit->text();
+    _model.passwd = ui->gitPasswdEdit->text();
 }

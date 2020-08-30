@@ -30,9 +30,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    const QModelIndex getFileIndex();
+    const QModelIndex getFocusedIndex();
 
-    //QString GetHash(const QString &txt);
     static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
 
     QString DisplayNewDirDialog(const QString &title);

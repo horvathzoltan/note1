@@ -8,7 +8,7 @@ class FileSystemModelHelper
 {
 private:
     static QFileSystemModel* _model;
-    static QModelIndex _model_index;
+    static QModelIndex _model_index; // ami meg van nyitva
     static QString _model_hash;
     static bool isInited;
 public:

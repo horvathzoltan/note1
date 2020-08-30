@@ -78,19 +78,19 @@ void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 {
     Q_UNUSED(index)
     Save();
-    auto ix = getFileIndex();
+    auto ix = getFocusedIndex();
     Open(ix);
 }
 
 void MainWindow::on_EditButton_clicked()
 {
     Save();
-    auto ix = getFileIndex();
+    auto ix = getFocusedIndex();
     Open(ix);
     UpdateActionButtonState(ix);
 }
 
-const QModelIndex MainWindow::getFileIndex(){
+const QModelIndex MainWindow::getFocusedIndex(){
     auto indexes = ui->fileTreeView->selectionModel()->selectedIndexes();
     if (indexes.isEmpty()) return QModelIndex();
     return indexes.at(0);
@@ -105,7 +105,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::on_addDirButton_clicked()
 {
-    auto ix = getFileIndex();
+    auto ix = getFocusedIndex();
     auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(DIR));
     if(fn.isEmpty()) return;
     QModelIndex newix;
@@ -125,7 +125,7 @@ void MainWindow::on_addDirButton_clicked()
 
 void MainWindow::on_deleteButton_clicked()
 {
-    auto ix = getFileIndex();
+    auto ix = getFocusedIndex();
     if(!FileSystemModelHelper::isValid()) return;
     if(FileSystemModelHelper::Equals(ix)) return;
     auto fn = FileSystemModelHelper::fileName(ix);
@@ -144,7 +144,7 @@ void MainWindow::on_deleteButton_clicked()
 
 void MainWindow::on_addNoteButton_clicked()
 {
-    auto ix = getFileIndex();
+    auto ix = getFocusedIndex();
     auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(FILE));
     if(fn.isEmpty()) return;
     //auto oldfn = model->filePath(ix);
@@ -227,16 +227,11 @@ QString  MainWindow::DisplayNewDirDialog(const QString& title){
     dialog.setTitle(title);
     dialog.exec();
     if(dialog.result()!=QDialog::Accepted) return QString();
-    return dialog.filename();
-}
+    auto m = dialog.model();
+    if(!m.isValid()) return QString();
 
-//int  MainWindow::DisplayCloneDialog(const QString& title){
-//    Q_UNUSED(title)
-//    CloneDialog dialog(this);
-//    //dialog.init(&settings);
-//    dialog.exec();
-//    return dialog.result();
-//}
+    return m.filename;
+}
 
 int  MainWindow::DisplaySettingsDialog(const QString& title){
     if(title.isEmpty()) return -1;
@@ -279,13 +274,19 @@ void MainWindow::on_cloneButton_clicked()
 {
     // ha még nem git könyvtár
     //zTrace();
-    CloneDialog dialog(this);
-    //dialog.init(&settings);
-    dialog.exec();
-    if(dialog.result() != QDialog::Accepted || !dialog.isValid()) return;
-    QString path = "";
+    auto fileindex = getFocusedIndex();
+    QString path = FileSystemModelHelper::filePath(fileindex);
 
-    GitHelper::clone(path, dialog.url(), dialog.user(), dialog.passwd());
+    CloneDialog dialog(this);
+    dialog.setTitle(QStringLiteral("Clone - %1").arg(path));
+    dialog.exec();
+
+    if(dialog.result() != QDialog::Accepted) return;
+    auto m = dialog.model();
+    if(!m.isValid()) return;
+
+
+    GitHelper::clone(path, m.url, m.user, m.passwd);
 }
 
 void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &index){

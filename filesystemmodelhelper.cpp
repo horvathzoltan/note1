@@ -117,6 +117,7 @@ QString FileSystemModelHelper::filePath(const QModelIndex &ix){
     return _model->filePath(ix);
 }
 
+
 QString FileSystemModelHelper::fileName(const QModelIndex &ix){
     return _model->fileName(ix);
 }

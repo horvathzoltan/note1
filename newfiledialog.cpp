@@ -18,7 +18,12 @@ void NewFileDialog::setTitle(const QString &title)
     setWindowTitle(title);
 }
 
-QString NewFileDialog::filename()
+void NewFileDialog::on_NewFileDialog_accepted()
 {
-    return ui->lineEdit->text();
+    _model.filename = ui->lineEdit->text();
+}
+
+bool NewFileDialog::Model::isValid() const
+{
+    return !filename.isEmpty();
 }
