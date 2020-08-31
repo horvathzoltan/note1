@@ -17,6 +17,7 @@
 #include "common/helper/string/stringhelper.h"
 #include "filesystemmodelhelper.h"
 
+
 extern Settings settings;
 
 const QString MainWindow::MSG_FAILEDTO = QStringLiteral("Failed to %1 %2: %3");
@@ -284,7 +285,6 @@ void MainWindow::on_cloneButton_clicked()
     if(dialog.result() != QDialog::Accepted) return;
     auto m = dialog.model();
     if(!m.isValid()) return;
-
 
     GitHelper::clone(path, m.url, m.user, m.passwd);
 }

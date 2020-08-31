@@ -29,6 +29,11 @@ public:
     CloneDialog(QWidget *parent);
     ~CloneDialog();    
     GET(_model, model)
+    SET(_model, setModel)
+//    /#define GET(v, name) const decltype(v)& name() const {return v;}
+    //decltype(_model)& model() {return _model;}
+    //void setModel(const decltype(_model)& m) {_model = m;}
+
     void setTitle(QString a);
 private slots:
     void on_CloneDialog_accepted();
