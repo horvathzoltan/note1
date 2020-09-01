@@ -21,6 +21,7 @@ SOURCES += \
     filenamehelper.cpp \
     filesystemmodelhelper.cpp \
     githelper.cpp \
+    gitnote.cpp \
     main.cpp \
     mainwindow.cpp \
     newfiledialog.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
     filenamehelper.h \
     filesystemmodelhelper.h \
     githelper.h \
+    gitnote.h \
     mainwindow.h \
     newfiledialog.h \
     processhelper.h \

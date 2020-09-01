@@ -4,6 +4,7 @@
 #include <QFileSystemModel>
 #include <QMainWindow>
 #include "common/logger/log.h"
+#include "gitnote.h"
 #include <QTimer>
 
 QT_BEGIN_NAMESPACE
@@ -28,12 +29,13 @@ private:
     static const QString DELETE;
     static const QString CREATE;
     static const int AUTOSAVE_SEC;
+    static const QModelIndex NullIndex;
     QTimer _autosave_timer;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    const QModelIndex getFocusedIndex();
+    const QModelIndex focusedIndex() const;
 
     static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
 
@@ -49,10 +51,11 @@ public:
     bool AddRepoValidation(const QModelIndex &index);
     void updateGitActionButtonState(const QString &s, const QModelIndex &index);
     void Open(const QModelIndex& index);
-    void Save();
+    //void Save();
     void updateRepoButton(const QString &giturl, const QModelIndex &index);
     void updateCloneButton(const QString &giturl, const QModelIndex &index);
     int DisplayCloneDialog(const QString &title);
+    void setUi(GitNote::SaveModelR fm);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();

@@ -16,7 +16,7 @@
 #include "processhelper.h"
 #include "common/helper/string/stringhelper.h"
 #include "filesystemmodelhelper.h"
-
+#include "gitnote.h"
 
 extern Settings settings;
 
@@ -78,23 +78,50 @@ void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 {
     Q_UNUSED(index)
-    Save();
-    auto ix = getFocusedIndex();
-    Open(ix);
+
+    setUi(
+        GitNote::Save({
+            {
+                ui->filenameEdit->text(),
+                ui->plainTextEdit->toPlainText()
+            },
+            focusedIndex(),
+            GitNote::DoubleClick
+        })
+        );
 }
 
 void MainWindow::on_EditButton_clicked()
 {
-    Save();
-    auto ix = getFocusedIndex();
-    Open(ix);
-    UpdateActionButtonState(ix);
+    setUi(
+        GitNote::Save({
+            {
+                ui->filenameEdit->text(),
+                ui->plainTextEdit->toPlainText()
+            },
+            focusedIndex(),
+            GitNote::EditButton
+        })
+        );
 }
 
-const QModelIndex MainWindow::getFocusedIndex(){
+void MainWindow::setUi(GitNote::SaveModelR m)
+{
+    if(!m.txtfile.isValid()) return;
+
+    ui->plainTextEdit->setPlainText(m.txtfile.txt);
+    ui->filenameEdit->setText(m.txtfile.name);
+    UpdateEditorState();
+    if(m.type==GitNote::EditButton) UpdateActionButtonState(m.index);
+}
+
+const QModelIndex MainWindow::NullIndex = QModelIndex();
+
+const QModelIndex MainWindow::focusedIndex() const{
     auto indexes = ui->fileTreeView->selectionModel()->selectedIndexes();
-    if (indexes.isEmpty()) return QModelIndex();
-    return indexes.at(0);
+    if (indexes.isEmpty()) return NullIndex;
+    //auto a = indexes[0];//.at(0);
+    return indexes[0];
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -106,7 +133,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::on_addDirButton_clicked()
 {
-    auto ix = getFocusedIndex();
+    auto ix = focusedIndex();
     auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(DIR));
     if(fn.isEmpty()) return;
     QModelIndex newix;
@@ -126,7 +153,7 @@ void MainWindow::on_addDirButton_clicked()
 
 void MainWindow::on_deleteButton_clicked()
 {
-    auto ix = getFocusedIndex();
+    auto ix = focusedIndex();
     if(!FileSystemModelHelper::isValid()) return;
     if(FileSystemModelHelper::Equals(ix)) return;
     auto fn = FileSystemModelHelper::fileName(ix);
@@ -145,7 +172,7 @@ void MainWindow::on_deleteButton_clicked()
 
 void MainWindow::on_addNoteButton_clicked()
 {
-    auto ix = getFocusedIndex();
+    auto ix = focusedIndex();
     auto fn = DisplayNewDirDialog(MSG_ADDNEWDIALOG.arg(FILE));
     if(fn.isEmpty()) return;
     //auto oldfn = model->filePath(ix);
@@ -275,7 +302,7 @@ void MainWindow::on_cloneButton_clicked()
 {
     // ha még nem git könyvtár
     //zTrace();
-    auto fileindex = getFocusedIndex();
+    auto fileindex = focusedIndex();
     QString path = FileSystemModelHelper::filePath(fileindex);
 
     CloneDialog dialog(this);
@@ -321,11 +348,11 @@ void MainWindow::updateGitActionButtonState(const QString &giturl, const QModelI
 /// \brief menti txt-t, ha kell átnevezi a fájlt a modellen keresztül
 ///
 
-void MainWindow::Save(){
-    auto fn =  ui->filenameEdit->text();
-    auto txt = ui->plainTextEdit->toPlainText();
-    FileSystemModelHelper::Save(fn, txt);
-}
+//void MainWindow::Save(){
+//    auto fn =  ui->filenameEdit->text();
+//    auto txt = ui->plainTextEdit->toPlainText();
+//    FileSystemModelHelper::Save(fn, txt);
+//}
 
 ///
 /// \brief megnyitja indexet
