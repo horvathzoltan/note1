@@ -1,4 +1,3 @@
-#include "clonedialog.h"
 #include "filenamehelper.h"
 #include "filesystemmodelhelper.h"
 #include "githelper.h"
@@ -41,17 +40,27 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&_autosave_timer, &QTimer::timeout, this, &MainWindow::on_autosave_timer_timeout);
 }
 
-void MainWindow::on_autosave_timer_timeout(){
-    auto fn = ui->filenameEdit->text();
-    auto txt = ui->plainTextEdit->toPlainText();
-    FileSystemModelHelper::Save(fn, txt);
-}
+
 
 MainWindow::~MainWindow()
 {
     //FileSystemModelHelper::uninit();
     delete ui;
 }
+
+void MainWindow::on_autosave_timer_timeout(){
+    setUi(
+        GitNote::Save({
+            {
+                ui->filenameEdit->text(),
+                ui->plainTextEdit->toPlainText()
+            },
+            focusedIndex(),
+            GitNote::Timer
+        })
+        );
+}
+
 
 void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *w)
 {
@@ -62,8 +71,31 @@ void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QStri
     reinterpret_cast<MainWindow*>(w)->statusBar()->showMessage(msg, 2000);
 }
 
+///
+/// \brief Feldolgozza a settingst
+///
 
-/*fileTreeView events*/
+//void MainWindow::SettingsProcess(){
+//    if(!settings.isValid()) return;
+//    com::helper::SettingsHelper::saveSettings();
+//    auto projectDir = FilenameHelper::GetProjectAbsolutePath();
+//    FileSystemModelHelper::setRootPath(projectDir);
+//    updateFileTreeView();
+//}
+
+/*
+* filetree
+*/
+
+const QModelIndex MainWindow::NullIndex = QModelIndex();
+
+const QModelIndex MainWindow::focusedIndex() const{
+    auto indexes = ui->fileTreeView->selectionModel()->selectedIndexes();
+    if (indexes.isEmpty()) return NullIndex;
+    //auto a = indexes[0];//.at(0);
+    return indexes[0];
+}
+
 void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 {
     UpdateActionButtonState(index);
@@ -74,6 +106,7 @@ void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 
     ui->repolabel->setText(giturl);
 }
+
 
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 {
@@ -91,6 +124,19 @@ void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
         );
 }
 
+
+void MainWindow::updateFileTreeView()
+{
+    auto m = FileSystemModelHelper::Model();
+    auto ix = FileSystemModelHelper::Index();
+
+    ui->fileTreeView->setModel(m);
+    ui->fileTreeView->setRootIndex(ix);
+}
+
+/*
+* fájlmentés
+*/
 void MainWindow::on_EditButton_clicked()
 {
     setUi(
@@ -105,31 +151,26 @@ void MainWindow::on_EditButton_clicked()
         );
 }
 
-void MainWindow::setUi(GitNote::SaveModelR m)
-{
-    if(!m.txtfile.isValid()) return;
-
-    ui->plainTextEdit->setPlainText(m.txtfile.txt);
-    ui->filenameEdit->setText(m.txtfile.name);
-    UpdateEditorState();
-    if(m.type==GitNote::EditButton) UpdateActionButtonState(m.index);
-}
-
-const QModelIndex MainWindow::NullIndex = QModelIndex();
-
-const QModelIndex MainWindow::focusedIndex() const{
-    auto indexes = ui->fileTreeView->selectionModel()->selectedIndexes();
-    if (indexes.isEmpty()) return NullIndex;
-    //auto a = indexes[0];//.at(0);
-    return indexes[0];
-}
-
 void MainWindow::closeEvent(QCloseEvent *event) {
     Q_UNUSED (event)
-    auto fn = ui->filenameEdit->text();
-    auto txt = ui->plainTextEdit->toPlainText();
-    FileSystemModelHelper::Save(fn, txt);
+    setUi(
+        GitNote::Save({
+            {
+                ui->filenameEdit->text(),
+                ui->plainTextEdit->toPlainText()
+            },
+            focusedIndex(),
+            GitNote::Close
+        })
+        );
 }
+
+
+/*
+* új mappa
+*/
+
+
 
 void MainWindow::on_addDirButton_clicked()
 {
@@ -150,6 +191,9 @@ void MainWindow::on_addDirButton_clicked()
 
 }
 
+/*
+* törlés fájl/mappa
+*/
 
 void MainWindow::on_deleteButton_clicked()
 {
@@ -169,6 +213,10 @@ void MainWindow::on_deleteButton_clicked()
     }
 }
 
+
+/*
+ * új note
+*/
 
 void MainWindow::on_addNoteButton_clicked()
 {
@@ -202,51 +250,14 @@ void MainWindow::on_addNoteButton_clicked()
     }
 }
 
-void MainWindow::UpdateEditorState(){
-    if(FileSystemModelHelper::isValid()){
-        MainWindow::setEditorState(true);
-    }else{
-        MainWindow::setEditorState(false);
-    }
-}
-
-void MainWindow::setEditorState(bool x){
-    ui->filenameEdit->setEnabled(x);
-    ui->plainTextEdit->setEnabled(x);
-    if(x) _autosave_timer.start(1000*AUTOSAVE_SEC);
-    else _autosave_timer.stop();
-}
-
-void MainWindow::updateFileTreeView()
-{
-    auto m = FileSystemModelHelper::Model();
-    auto ix = FileSystemModelHelper::Index();
-
-    ui->fileTreeView->setModel(m);
-    ui->fileTreeView->setRootIndex(ix);
-}
-
-void MainWindow::UpdateActionButtonState(const QModelIndex &index){
-    auto a =
-        FileSystemModelHelper::isValid() &&
-        !(
-            FileSystemModelHelper::Equals(index) ||
-            FileSystemModelHelper::isDir(index)
-            );
-
-    setActionButtonState(a);
-}
 
 
-///
-/// \brief a szerkesztő actionok buttonjait engedélyezi/tiltja
-/// \param x
-///
-void MainWindow::setActionButtonState(bool x){
-    ui->EditButton->setEnabled(x);
-    ui->deleteButton->setEnabled(x);
-}
 
+
+
+/*
+* dialogok
+*/
 
 
 QString  MainWindow::DisplayNewDirDialog(const QString& title){
@@ -271,24 +282,23 @@ int  MainWindow::DisplaySettingsDialog(const QString& title){
     return dialog.result();        
 }
 
-///
-/// \brief Feldolgozza a settingst
-///
+//CloneDialog::Model  MainWindow::DisplayCloneDialog(const QString& title){
+//    CloneDialog dialog(this);
+//    dialog.setTitle(title);
+//    dialog.exec();
+//    if(dialog.result() != QDialog::Accepted) return CloneDialog::Model();
+//    return dialog.model();
+//}
 
-void MainWindow::SettingsProcess(){
-    if(!settings.isValid()) return;
-    com::helper::SettingsHelper::saveSettings();
-    auto projectDir = FilenameHelper::GetProjectAbsolutePath();
-    FileSystemModelHelper::setRootPath(projectDir);
-    updateFileTreeView();
-}
+
 
 
 void MainWindow::on_SettingsButton_clicked()
 {
     auto r = DisplaySettingsDialog(MSG_ADDNEWDIALOG.arg(DIR));
     if(r!=QDialog::Accepted) return;
-    SettingsProcess();
+    GitNote::SettingsProcess();
+    updateFileTreeView();
 }
 
 
@@ -300,21 +310,16 @@ void MainWindow::on_addToRepoButton_clicked()
 
 void MainWindow::on_cloneButton_clicked()
 {
-    // ha még nem git könyvtár
-    //zTrace();
+    GitNote::clone();
     auto fileindex = focusedIndex();
     QString path = FileSystemModelHelper::filePath(fileindex);
 
-    CloneDialog dialog(this);
-    dialog.setTitle(QStringLiteral("Clone - %1").arg(path));
-    dialog.exec();
-
-    if(dialog.result() != QDialog::Accepted) return;
-    auto m = dialog.model();
+    auto m = GitNote::DisplayCloneDialog(this, QStringLiteral("Clone - %1").arg(path));
     if(!m.isValid()) return;
-
     GitHelper::clone(path, m.url, m.user, m.passwd);
 }
+
+
 
 void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &index){
     auto nab = !FileSystemModelHelper::isDir(index)&&
@@ -344,36 +349,50 @@ void MainWindow::updateGitActionButtonState(const QString &giturl, const QModelI
     updateCloneButton(giturl, index);
 }
 
-///
-/// \brief menti txt-t, ha kell átnevezi a fájlt a modellen keresztül
-///
 
-//void MainWindow::Save(){
-//    auto fn =  ui->filenameEdit->text();
-//    auto txt = ui->plainTextEdit->toPlainText();
-//    FileSystemModelHelper::Save(fn, txt);
-//}
 
-///
-/// \brief megnyitja indexet
-///
-/// megnyitja az indexet
-/// -ha valós
-/// -ha file
-/// -ha nincsen megnyitva
-///
-
-void MainWindow::Open(const QModelIndex& index)
+void MainWindow::setUi(GitNote::SaveModelR m)
 {
-    if(!index.isValid()) return;
-    if(FileSystemModelHelper::isDir(index)) return;
-    if(FileSystemModelHelper::Equals(index)) return;
-    auto filename = FileSystemModelHelper::fileName(index);
-    auto txt2 = FileSystemModelHelper::Load(index);
-    ui->plainTextEdit->setPlainText(txt2);
-    ui->filenameEdit->setText(filename);
+    if(!m.txtfile.isValid()) return;
+    
+    ui->plainTextEdit->setPlainText(m.txtfile.txt);
+    ui->filenameEdit->setText(m.txtfile.name);
     UpdateEditorState();
+    if(m.type==GitNote::EditButton) UpdateActionButtonState(m.index);
+}
+
+void MainWindow::UpdateEditorState(){
+    if(FileSystemModelHelper::isValid()){
+        MainWindow::setEditorState(true);
+    }else{
+        MainWindow::setEditorState(false);
+    }
+}
+
+void MainWindow::setEditorState(bool x){
+    ui->filenameEdit->setEnabled(x);
+    ui->plainTextEdit->setEnabled(x);
+    if(x) _autosave_timer.start(1000*AUTOSAVE_SEC);
+    else _autosave_timer.stop();
+}
+
+void MainWindow::UpdateActionButtonState(const QModelIndex &index){
+    auto a =
+        FileSystemModelHelper::isValid() &&
+        !(
+            FileSystemModelHelper::Equals(index) ||
+            FileSystemModelHelper::isDir(index)
+            );
+
+    setActionButtonState(a);
 }
 
 
-
+///
+/// \brief a szerkesztő actionok buttonjait engedélyezi/tiltja
+/// \param x
+///
+void MainWindow::setActionButtonState(bool x){
+    ui->EditButton->setEnabled(x);
+    ui->deleteButton->setEnabled(x);
+}

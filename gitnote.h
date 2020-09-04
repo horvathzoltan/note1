@@ -1,15 +1,16 @@
 #ifndef GITNOTE_H
 #define GITNOTE_H
 
+#include <QMainWindow>
 #include <QModelIndex>
 #include <QString>
 
-
+#include "clonedialog.h"
 
 class GitNote
 {
 public:
-    enum OpenType {DoubleClick, EditButton};
+    enum OpenType {DoubleClick, EditButton, Timer, Close};
 
     struct TextFileModel{
         QString name, txt;
@@ -21,6 +22,7 @@ public:
         QModelIndex index;
         OpenType type;
 
+        bool isValid(){ return !txtfile.isValid(); }
     };
 
     struct SaveModelR{
@@ -31,6 +33,9 @@ public:
 
    static GitNote::SaveModelR Save(const SaveModel& m);
 
+   static void SettingsProcess();
+
+   static CloneDialog::Model DisplayCloneDialog(QMainWindow *w, const QString& title);
 private:
    static TextFileModel Open(const QModelIndex& index);
 };

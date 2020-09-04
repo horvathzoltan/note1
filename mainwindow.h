@@ -4,6 +4,7 @@
 #include <QFileSystemModel>
 #include <QMainWindow>
 #include "common/logger/log.h"
+#include "clonedialog.h"
 #include "gitnote.h"
 #include <QTimer>
 
@@ -53,9 +54,10 @@ public:
     void Open(const QModelIndex& index);
     //void Save();
     void updateRepoButton(const QString &giturl, const QModelIndex &index);
-    void updateCloneButton(const QString &giturl, const QModelIndex &index);
-    int DisplayCloneDialog(const QString &title);
+    void updateCloneButton(const QString &giturl, const QModelIndex &index);    
     void setUi(GitNote::SaveModelR fm);
+
+    //CloneDialog::Model DisplayCloneDialog(const QString &title);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();

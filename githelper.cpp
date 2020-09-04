@@ -62,3 +62,5 @@ bool GitHelper::clone(const QString& path, const QString& url, const QString& us
     zTrace()
     return false;
 }
+
+
