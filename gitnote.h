@@ -6,10 +6,20 @@
 #include <QString>
 
 #include "clonedialog.h"
+#include "newfiledialog.h"
 
 class GitNote
 {
 public:
+    static const QString MSG_ADDNEW;
+    static const QString MSG_ADDNEWDIALOG;
+    static const QString DIR;
+    static const QString MSG_FAILEDTO;
+    static const QString CREATE;
+    static const QString FILE;
+    static const QString DELETE;
+
+
     enum OpenType {DoubleClick, EditButton, Timer, Close};
 
     struct TextFileModel{
@@ -31,13 +41,41 @@ public:
         OpenType type;
     };
 
+    struct InfoModel{  static const QString FILE;
+        static const QString DELETE;
+        static const int AUTOSAVE_SEC;
+        static const QModelIndex NullIndex;
+        const QModelIndex& index;
+    };
+
+    struct InfoModelR{
+        QString giturl;
+        const QModelIndex& index;
+    };
+
+   static GitNote::InfoModelR Info(const InfoModel& m);
+
    static GitNote::SaveModelR Save(const SaveModel& m);
 
-   static void SettingsProcess();
+   static void SettingsProcess();   
 
-   static CloneDialog::Model DisplayCloneDialog(QMainWindow *w, const QString& title);
+   struct CloneModel{
+       QMainWindow*w;
+       const QModelIndex& fileindex;
+   };
+
+   static void clone(CloneModel m);
+
+   struct AddDirModel{
+       QMainWindow*w;
+       const QModelIndex& fileindex;
+   };
+   static void AddDir(AddDirModel m);
+
 private:
-   static TextFileModel Open(const QModelIndex& index);
+   static TextFileModel Open(const QModelIndex& index);  
+   static CloneDialog::Model DisplayCloneDialog(QMainWindow *w, const QString& title);
+   static NewFileDialog::Model DisplayNewDirDialog(QMainWindow *w, const QString& title);
 };
 
 #endif // GITNOTE_H

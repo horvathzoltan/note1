@@ -11,6 +11,7 @@ class NewFileDialog;
 class NewFileDialog : public QDialog
 {
     Q_OBJECT
+public:
     struct Model{
         QString filename;
         bool isValid() const;

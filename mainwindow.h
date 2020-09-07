@@ -19,18 +19,13 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
+    static const QModelIndex NullIndex;
+    static const int AUTOSAVE_SEC;
+
     //QFileSystemModel *_model;
     //QModelIndex _model_index;
     //QString _model_hash;
-    static const QString MSG_ADDNEW;
-    static const QString MSG_ADDNEWDIALOG;
-    static const QString MSG_FAILEDTO;
-    static const QString FILE;
-    static const QString DIR;
-    static const QString DELETE;
-    static const QString CREATE;
-    static const int AUTOSAVE_SEC;
-    static const QModelIndex NullIndex;
+
     QTimer _autosave_timer;
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -56,7 +51,7 @@ public:
     void updateRepoButton(const QString &giturl, const QModelIndex &index);
     void updateCloneButton(const QString &giturl, const QModelIndex &index);    
     void setUi(GitNote::SaveModelR fm);
-
+    void setUi(GitNote::InfoModelR m);
     //CloneDialog::Model DisplayCloneDialog(const QString &title);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
