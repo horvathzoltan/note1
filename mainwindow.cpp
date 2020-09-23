@@ -10,7 +10,7 @@
 #include <QFileSystemModel>
 #include "common/logger/log.h"
 //#include <QCryptographicHash>
-#include "settingsdialog.h"
+
 #include "common/helper/settings/settingshelper.h"
 #include "processhelper.h"
 #include "common/helper/string/stringhelper.h"
@@ -165,20 +165,22 @@ void MainWindow::on_addDirButton_clicked()
 
 void MainWindow::on_deleteButton_clicked()
 {
-    auto ix = focusedIndex();
-    if(!FileSystemModelHelper::isValid()) return;
-    if(FileSystemModelHelper::Equals(ix)) return;
-    auto fn = FileSystemModelHelper::fileName(ix);
-    if(FileSystemModelHelper::isDir(ix))
-    {
-        if(!FileSystemModelHelper::Rmdir(ix))
-            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
-    }
-    else
-    {
-        if(!FileSystemModelHelper::Remove(ix))
-            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
-    }
+    GitNote::Delete({focusedIndex()});
+
+//    auto ix = focusedIndex();
+//    if(!FileSystemModelHelper::isValid()) return;
+//    if(FileSystemModelHelper::Equals(ix)) return;
+//    auto fn = FileSystemModelHelper::fileName(ix);
+//    if(FileSystemModelHelper::isDir(ix))
+//    {
+//        if(!FileSystemModelHelper::Rmdir(ix))
+//            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
+//    }
+//    else
+//    {
+//        if(!FileSystemModelHelper::Remove(ix))
+//            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
+//    }
 }
 
 
@@ -188,87 +190,15 @@ void MainWindow::on_deleteButton_clicked()
 
 void MainWindow::on_addNoteButton_clicked()
 {
-    auto ix = focusedIndex();
-    auto fn = DisplayNewDirDialog(GitNote::MSG_ADDNEWDIALOG.arg(GitNote::FILE));
-    if(fn.isEmpty()) return;
-    //auto oldfn = model->filePath(ix);
-    QString newfile;
-    if(FileSystemModelHelper::isDir(ix))
-    {
-        newfile = QDir(FileSystemModelHelper::filePath(ix)).filePath(fn);
-    }
-    else
-    {
-        newfile = FileSystemModelHelper::fileInfo(ix).absoluteDir().filePath(fn);
-    }
-
-    QFile f(newfile);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-    auto isok = f.open(QIODevice::NewOnly| QIODevice::Text);
-#else
-    auto isok = !QFileInfo::exists(newfile) && f.open(QIODevice::Text);
-#endif
-    if(isok){
-        f.close();
-        zInfo(GitNote::MSG_ADDNEW.arg(GitNote::FILE).arg(newfile));
-    }
-    else{
-        zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::CREATE).arg(GitNote::FILE).arg(newfile));
-    }
+    GitNote::AddNote({this,focusedIndex()});
 }
 
-
-
-
-
-
-/*
-* dialogok
-*/
-
-
-//QString  MainWindow::DisplayNewDirDialog(const QString& title){
-//    if(title.isEmpty()) return QString();
-//    NewFileDialog dialog(this);
-//    dialog.setTitle(title);
-//    dialog.exec();
-//    if(dialog.result()!=QDialog::Accepted) return QString();
-//    auto m = dialog.model();
-//    if(!m.isValid()) return QString();
-
-//    return m.filename;
-//}
-
-int  MainWindow::DisplaySettingsDialog(const QString& title){
-    if(title.isEmpty()) return -1;
-    SettingsDialog dialog(this);
-    //dialog.setTitle(title);
-    dialog.init(&settings);
-    //dialog.SetData(settings);
-    dialog.exec();
-    return dialog.result();        
-}
-
-//CloneDialog::Model  MainWindow::DisplayCloneDialog(const QString& title){
-//    CloneDialog dialog(this);
-//    dialog.setTitle(title);
-//    dialog.exec();
-//    if(dialog.result() != QDialog::Accepted) return CloneDialog::Model();
-//    return dialog.model();
-//}
-
-
-
-
+// TODO setUi GitNote::Settings return típusára -  SettingsModelR
 void MainWindow::on_SettingsButton_clicked()
 {
-    auto r = DisplaySettingsDialog(GitNote::MSG_ADDNEWDIALOG.arg(GitNote::DIR));
-    if(r!=QDialog::Accepted) return;
-    GitNote::SettingsProcess();
+    GitNote::Settings({this});
     updateFileTreeView();
 }
-
-
 
 void MainWindow::on_addToRepoButton_clicked()
 {
@@ -277,10 +207,8 @@ void MainWindow::on_addToRepoButton_clicked()
 
 void MainWindow::on_cloneButton_clicked()
 {
-    GitNote::clone({this, focusedIndex()});
+    GitNote::Clone({this, focusedIndex()});
 }
-
-
 
 void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &index){
     auto nab = !FileSystemModelHelper::isDir(index)&&
@@ -294,7 +222,6 @@ void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &inde
 
     ui->addToRepoButton->setEnabled(e);
 }
-
 
 void MainWindow::updateCloneButton(const QString &giturl, const QModelIndex &index){
     auto e =
@@ -310,7 +237,6 @@ void MainWindow::updateGitActionButtonState(const QString &giturl, const QModelI
     updateCloneButton(giturl, index);
 }
 
-
 void MainWindow::setUi(GitNote::InfoModelR m){
     UpdateActionButtonState(m.index);
     updateGitActionButtonState(m.giturl, m.index);
@@ -318,7 +244,33 @@ void MainWindow::setUi(GitNote::InfoModelR m){
 }
 
 void MainWindow::setUi(GitNote::SaveModelR m)
-{
+{//    auto ix = focusedIndex();
+    //    auto fn = DisplayNewNoteDialog(this, GitNote::MSG_ADDNEWDIALOG.arg(GitNote::FILE));
+    //    if(fn.isEmpty()) return;
+    //    //auto oldfn = model->filePath(ix);
+    //    QString newfile;
+    //    if(FileSystemModelHelper::isDir(ix))
+    //    {
+    //        newfile = QDir(FileSystemModelHelper::filePath(ix)).filePath(fn);
+    //    }
+    //    else
+    //    {
+    //        newfile = FileSystemModelHelper::fileInfo(ix).absoluteDir().filePath(fn);
+    //    }
+
+    //    QFile f(newfile);
+    //#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+    //    auto isok = f.open(QIODevice::NewOnly| QIODevice::Text);
+    //#else
+    //    auto isok = !QFileInfo::exists(newfile) && f.open(QIODevice::Text);
+    //#endif
+    //    if(isok){
+    //        f.close();
+    //        zInfo(GitNote::MSG_ADDNEW.arg(GitNote::FILE).arg(newfile));
+    //    }
+    //    else{
+    //        zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::CREATE).arg(GitNote::FILE).arg(newfile));
+    //    }
     if(!m.txtfile.isValid()) return;
     
     ui->plainTextEdit->setPlainText(m.txtfile.txt);

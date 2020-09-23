@@ -31,6 +31,11 @@ void SettingsDialog::init(Settings *s)
     SetData();
 }
 
+void SettingsDialog::setTitle(const QString &title)
+{
+    setWindowTitle(title);
+}
+
 //void SettingsDialog::SetData(Settings s){
 //    if(!isInited) return;
 //    ui->projectPathEdit->setText(s.projectPath);

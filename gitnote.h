@@ -64,7 +64,7 @@ public:
        const QModelIndex& fileindex;
    };
 
-   static void clone(CloneModel m);
+   static void Clone(CloneModel m);
 
    struct AddDirModel{
        QMainWindow*w;
@@ -72,10 +72,31 @@ public:
    };
    static void AddDir(AddDirModel m);
 
-private:
-   static TextFileModel Open(const QModelIndex& index);  
-   static CloneDialog::Model DisplayCloneDialog(QMainWindow *w, const QString& title);
-   static NewFileDialog::Model DisplayNewDirDialog(QMainWindow *w, const QString& title);
+   struct SettingsModel{
+       QMainWindow *w;
+   };
+
+   static void Settings(SettingsModel m);
+
+   struct AddNoteModel{
+       QMainWindow*w;
+       const QModelIndex& fileindex;
+   };
+   static void AddNote(AddNoteModel m);
+
+   struct DeleteModel{
+       const QModelIndex& fileindex;
+   };
+
+   static void Delete(DeleteModel m);
+private:    
+    static TextFileModel Open(const QModelIndex& index);
+    static CloneDialog::Model DisplayCloneDialog(QMainWindow *w, const QString& title);
+    static NewFileDialog::Model DisplayNewDirDialog(QMainWindow *w, const QString& title);
+    static NewFileDialog::Model DisplayNewNoteDialog(QMainWindow *w, const QString& title);
+    static int DisplaySettingsDialog(QMainWindow *main, const QString& title);
 };
+
+
 
 #endif // GITNOTE_H

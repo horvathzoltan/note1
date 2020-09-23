@@ -24,6 +24,7 @@ public:
     void GetData();
     //  bool eventFilter(QObject *o, QEvent *e) override;
 
+    void setTitle(const QString &title);
 private slots:
     void on_folderPickerButton_clicked();
     void checkGoToParent(const QString &);
