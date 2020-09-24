@@ -76,7 +76,11 @@ public:
        QMainWindow *w;
    };
 
-   static void Settings(SettingsModel m);
+   struct SettingsModelR{
+       bool state;
+   };
+
+   static SettingsModelR Settings(SettingsModel m);
 
    struct AddNoteModel{
        QMainWindow*w;

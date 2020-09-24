@@ -196,7 +196,11 @@ void MainWindow::on_addNoteButton_clicked()
 // TODO setUi GitNote::Settings return típusára -  SettingsModelR
 void MainWindow::on_SettingsButton_clicked()
 {
-    GitNote::Settings({this});
+    setUi(GitNote::Settings({this}));
+}
+
+void MainWindow::setUi(GitNote::SettingsModelR m)
+{
     updateFileTreeView();
 }
 

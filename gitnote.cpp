@@ -152,10 +152,11 @@ void GitNote::AddNote(AddNoteModel m){
     }
 }
 
-void GitNote::Settings(SettingsModel m){
+GitNote::SettingsModelR GitNote::Settings(SettingsModel m){
     auto r = GitNote::DisplaySettingsDialog(m.w, GitNote::MSG_ADDNEWDIALOG.arg(GitNote::DIR));
-    if(r!=QDialog::Accepted) return;
+    if(r!=QDialog::Accepted) return {false};
     GitNote::SettingsProcess();
+    return {true};
 }
 
 int GitNote::DisplaySettingsDialog(QMainWindow *main, const QString& title){
