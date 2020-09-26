@@ -7,6 +7,8 @@
 
 #include "clonedialog.h"
 #include "newfiledialog.h"
+#include "settingsdialog.h"
+
 
 class GitNote
 {

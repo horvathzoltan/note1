@@ -6,7 +6,6 @@
 #include "settings.h"
 #include "filenamehelper.h"
 #include "githelper.h"
-#include "settingsdialog.h"
 
 ///
 /// \brief menti txt-t, ha kell átnevezi a fájlt a modellen keresztül
@@ -49,7 +48,8 @@ GitNote::TextFileModel GitNote::Open(const QModelIndex& index)
 
 extern Settings settings;
 
-void GitNote::SettingsProcess(){
+void GitNote::SettingsProcess()
+{
     if(!settings.isValid()) return;
     com::helper::SettingsHelper::saveSettings();
     auto projectDir = FilenameHelper::GetProjectAbsolutePath();
@@ -163,8 +163,7 @@ int GitNote::DisplaySettingsDialog(QMainWindow *main, const QString& title){
     if(title.isEmpty()) return -1;
     SettingsDialog dialog(main);
     dialog.setTitle(title);
-    dialog.init(&settings);
-    //dialog.SetData(settings);
+    dialog.setModel({&settings});
     dialog.exec();
     return dialog.result();
 }

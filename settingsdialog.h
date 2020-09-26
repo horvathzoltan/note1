@@ -1,6 +1,8 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
+#include "common/macrofactory/macro.h"
+
 #include <QDialog>
 #include <QFileDialog>
 #include <settings.h>
@@ -12,30 +14,31 @@ class SettingsDialog;
 class SettingsDialog : public QDialog
 {
     Q_OBJECT
+public:
+    struct Model{
+    public:
+        Settings *s;
+    };
 
 public:
+    Model _model;
     explicit SettingsDialog(QWidget *parent = nullptr);
     ~SettingsDialog();
-    void init(Settings *s);
-    void accept() override;
-//    void SetData(Settings);
-//    Settings GetData();
-    void SetData();
-    void GetData();
-    //  bool eventFilter(QObject *o, QEvent *e) override;
+
+    void SetUI();
+
+    GET(_model, model)
+    SET_UI(_model, setModel, SetUI)
 
     void setTitle(const QString &title);
 private slots:
+    void on_SettingsDialog_accepted();
     void on_folderPickerButton_clicked();
     void checkGoToParent(const QString &);
-    //void checkLineEdit(const QString &text);
 private:
-    Ui::SettingsDialog *ui;
-    Settings *s;
-    bool isInited;
-    QFileDialog *filedialog;
 
-    //static bool pathFits(const QString&);
+    Ui::SettingsDialog *ui;
+    QFileDialog *filedialog;
 };
 
 #endif // SETTINGSDIALOG_H

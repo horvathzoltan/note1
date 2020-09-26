@@ -119,17 +119,17 @@ addrepovalidation->
     - ha az aktuális index a fentieknek eleget tesz, ok, ha nem false
 
 clone repo ->
-meg kell adni egy repot,
-- url, passwd, user  dialog
-- ha ilyen néven nincsen még könyvtár
-    amit leklónoz a proj könyvtárban
-- url, passwd, user   megjegyez
+1. hithubon repot kell csinálni - ezt parancssorból nem lehet csak web felületen - https://github.com/new
+2. az üres repot le kell klónozni a programban:
 
-git@github.com:horvathzoltan/common.git - common könyvtár van-e
+meg kell adni egy repot: clone dialog: url, passwd, user
+- az url-ből kiderül mit kell klónozni - mappa név
+- ha az akt. könyvtárban ilyen már van - hiba
+- egyébként klónoz
+
+- mivel a klónozás új könyvtárat hoz létre, nem számít az aktuális üres-e
+
 git -C /home/zoli/cmn2/a clone git@github.com:horvathzoltan/3dplots.git
-
-
-
 
 /// ezzel vajon mi volt a szándék?
 void MainWindow::SettingsProcess(){
@@ -202,3 +202,5 @@ void MainWindow::SettingsProcess(){
     FileSystemModelHelper::setRootPath(projectDir);
     updateFileTreeView();
 }
+
+

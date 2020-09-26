@@ -58,9 +58,14 @@ QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
     return rootpath+'|'+file;
 }
 
+/*
+git@github.com:horvathzoltan/3dplots.git - 3dplots könyvtár van-e
+git -C /home/zoli/cmn2/a clone git@github.com:horvathzoltan/3dplots.git
+*/
 bool GitHelper::clone(const QString& path, const QString& url, const QString& user, const QString& passwd){
     zTrace()
     return false;
+
 }
 
 

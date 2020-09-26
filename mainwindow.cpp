@@ -33,8 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&_autosave_timer, &QTimer::timeout, this, &MainWindow::on_autosave_timer_timeout);
 }
 
-
-
 MainWindow::~MainWindow()
 {
     //FileSystemModelHelper::uninit();
@@ -64,18 +62,6 @@ void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QStri
     reinterpret_cast<MainWindow*>(w)->statusBar()->showMessage(msg, 2000);
 }
 
-///
-/// \brief Feldolgozza a settingst
-///
-
-//void MainWindow::SettingsProcess(){
-//    if(!settings.isValid()) return;
-//    com::helper::SettingsHelper::saveSettings();
-//    auto projectDir = FilenameHelper::GetProjectAbsolutePath();
-//    FileSystemModelHelper::setRootPath(projectDir);
-//    updateFileTreeView();
-//}
-
 /*
 * filetree
 */
@@ -86,6 +72,15 @@ const QModelIndex MainWindow::focusedIndex() const{
     auto indexes = ui->fileTreeView->selectionModel()->selectedIndexes();
     if (indexes.isEmpty()) return NullIndex;
     return indexes.first();
+}
+
+void MainWindow::updateFileTreeView()
+{
+    auto m = FileSystemModelHelper::Model();
+    auto ix = FileSystemModelHelper::Index();
+
+    ui->fileTreeView->setModel(m);
+    ui->fileTreeView->setRootIndex(ix);
 }
 
 void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
@@ -110,15 +105,6 @@ void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
         );
 }
 
-
-void MainWindow::updateFileTreeView()
-{
-    auto m = FileSystemModelHelper::Model();
-    auto ix = FileSystemModelHelper::Index();
-
-    ui->fileTreeView->setModel(m);
-    ui->fileTreeView->setRootIndex(ix);
-}
 
 /*
 * fájlmentés
@@ -166,21 +152,6 @@ void MainWindow::on_addDirButton_clicked()
 void MainWindow::on_deleteButton_clicked()
 {
     GitNote::Delete({focusedIndex()});
-
-//    auto ix = focusedIndex();
-//    if(!FileSystemModelHelper::isValid()) return;
-//    if(FileSystemModelHelper::Equals(ix)) return;
-//    auto fn = FileSystemModelHelper::fileName(ix);
-//    if(FileSystemModelHelper::isDir(ix))
-//    {
-//        if(!FileSystemModelHelper::Rmdir(ix))
-//            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
-//    }
-//    else
-//    {
-//        if(!FileSystemModelHelper::Remove(ix))
-//            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
-//    }
 }
 
 
@@ -201,7 +172,8 @@ void MainWindow::on_SettingsButton_clicked()
 
 void MainWindow::setUi(GitNote::SettingsModelR m)
 {
-    updateFileTreeView();
+    if(m.state)
+        updateFileTreeView();
 }
 
 void MainWindow::on_addToRepoButton_clicked()
@@ -215,8 +187,7 @@ void MainWindow::on_cloneButton_clicked()
 }
 
 void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &index){
-    auto nab = !FileSystemModelHelper::isDir(index)&&
-             !giturl.isEmpty();
+    auto nab = !(FileSystemModelHelper::isDir(index)||giturl.isEmpty());
 
     auto ne = !giturl.contains('|');
     auto dne =  giturl.startsWith('g') && ne;
@@ -230,8 +201,8 @@ void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &inde
 void MainWindow::updateCloneButton(const QString &giturl, const QModelIndex &index){
     auto e =
         giturl.isEmpty() &&
-        FileSystemModelHelper::isDir(index) &&
-        QDir(FileSystemModelHelper::filePath(index)).isEmpty();
+        FileSystemModelHelper::isDir(index); /*&&
+        QDir(FileSystemModelHelper::filePath(index)).isEmpty();*/
 
     ui->cloneButton->setEnabled(e);
 }
@@ -248,33 +219,7 @@ void MainWindow::setUi(GitNote::InfoModelR m){
 }
 
 void MainWindow::setUi(GitNote::SaveModelR m)
-{//    auto ix = focusedIndex();
-    //    auto fn = DisplayNewNoteDialog(this, GitNote::MSG_ADDNEWDIALOG.arg(GitNote::FILE));
-    //    if(fn.isEmpty()) return;
-    //    //auto oldfn = model->filePath(ix);
-    //    QString newfile;
-    //    if(FileSystemModelHelper::isDir(ix))
-    //    {
-    //        newfile = QDir(FileSystemModelHelper::filePath(ix)).filePath(fn);
-    //    }
-    //    else
-    //    {
-    //        newfile = FileSystemModelHelper::fileInfo(ix).absoluteDir().filePath(fn);
-    //    }
-
-    //    QFile f(newfile);
-    //#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-    //    auto isok = f.open(QIODevice::NewOnly| QIODevice::Text);
-    //#else
-    //    auto isok = !QFileInfo::exists(newfile) && f.open(QIODevice::Text);
-    //#endif
-    //    if(isok){
-    //        f.close();
-    //        zInfo(GitNote::MSG_ADDNEW.arg(GitNote::FILE).arg(newfile));
-    //    }
-    //    else{
-    //        zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::CREATE).arg(GitNote::FILE).arg(newfile));
-    //    }
+{
     if(!m.txtfile.isValid()) return;
     
     ui->plainTextEdit->setPlainText(m.txtfile.txt);
@@ -285,11 +230,7 @@ void MainWindow::setUi(GitNote::SaveModelR m)
 
 
 void MainWindow::UpdateEditorState(){
-    if(FileSystemModelHelper::isValid()){
-        MainWindow::setEditorState(true);
-    }else{
-        MainWindow::setEditorState(false);
-    }
+    MainWindow::setEditorState(FileSystemModelHelper::isValid());
 }
 
 void MainWindow::setEditorState(bool x){

@@ -62,13 +62,14 @@ private slots:
     void on_deleteButton_clicked();
     void on_addNoteButton_clicked();
     void on_fileTreeView_clicked(const QModelIndex &index);
-    void on_autosave_timer_timeout();
+    //void on_autosave_timer_timeout();
     void on_SettingsButton_clicked();
 
     void on_addToRepoButton_clicked();
     void on_cloneButton_clicked();
 
 private:
+    void on_autosave_timer_timeout();
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
