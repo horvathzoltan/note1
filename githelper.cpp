@@ -63,7 +63,14 @@ git@github.com:horvathzoltan/3dplots.git - 3dplots könyvtár van-e
 git -C /home/zoli/cmn2/a clone git@github.com:horvathzoltan/3dplots.git
 */
 bool GitHelper::clone(const QString& path, const QString& url, const QString& user, const QString& passwd){
-    zTrace()
+    //zTrace()
+
+    // TODO git könyvár fába nem lehet másik könyvtárt beleklónozni
+    // ha már van egy olyan mappa mint a repo   akkor sem
+    static auto commandTmp = QStringLiteral(R"(git -C %1 clone %2)");
+    auto command = commandTmp.arg(path).arg(url);
+    //zInfo(command);
+    auto out = ProcessHelper::Execute(command);
     return false;
 
 }
