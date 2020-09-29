@@ -11,6 +11,11 @@
 // git  rev-parse --show-toplevel
 //git -C /home/zoli/common/test2/ rev-parse --show-toplevel
 */
+///
+/// \brief A repo URL-jét adja a a fileinfo alapján
+/// \param fileInfo
+/// \return
+///
 QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
 {
    auto filepath = fileInfo.absoluteFilePath();
@@ -66,6 +71,7 @@ bool GitHelper::clone(const QString& path, const QString& url, const QString& us
     //zTrace()
 
     // TODO git könyvár fába nem lehet másik könyvtárt beleklónozni
+
     // ha már van egy olyan mappa mint a repo   akkor sem
     static auto commandTmp = QStringLiteral(R"(git -C %1 clone %2)");
     auto command = commandTmp.arg(path).arg(url);
