@@ -5,6 +5,7 @@
 
 class ProcessHelper
 {
+public:
     struct Output
     {
     public:

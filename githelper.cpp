@@ -4,6 +4,15 @@
 #include "filesystemmodelhelper.h"
 #include "common/logger/log.h"
 
+QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
+{
+    auto fileparent = fileInfo.absolutePath();
+
+    auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
+    if(out.exitCode!=0) return QString();
+    if(out.stdOut.isEmpty()) return QString();
+    return com::helper::StringHelper::GetFirstRow(out.stdOut);
+}
 
 /*
  * //git ls-tree --full-tree --name-only -r HEAD
@@ -19,20 +28,20 @@
 QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
 {
    auto filepath = fileInfo.absoluteFilePath();
-   auto fileparent = fileInfo.absolutePath();
+   //auto fileparent = fileInfo.absolutePath();
 
-    auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
-    if(out.exitCode!=0) return QString();
-    if(out.stdOut.isEmpty()) return QString();
-    QString rootpath = com::helper::StringHelper::GetFirstRow(out.stdOut);
-    if(rootpath.isEmpty()) return QString();
+    ProcessHelper::Output out;
+    //auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
+    //if(out.exitCode!=0) return QString();
+    //if(out.stdOut.isEmpty()) return QString();
+    QString rootpath = GetToplevel(fileInfo);//com::helper::StringHelper::GetFirstRow(out.stdOut);
+    if(rootpath.isEmpty()) return QString();    
 
     QString file;
 
     //if(!FileSystemModelHelper::isDir(index))
     if(!fileInfo.isDir())
-    {
-        out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
+    {         out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
         if(out.exitCode!=0) return rootpath;
         if(out.stdOut.isEmpty()) return rootpath;
         file = com::helper::StringHelper::GetFirstRow(out.stdOut);
