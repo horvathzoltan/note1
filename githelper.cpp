@@ -3,10 +3,12 @@
 #include "common/helper/string/stringhelper.h"
 #include "filesystemmodelhelper.h"
 #include "common/logger/log.h"
+#include <QDateTime>
 
 QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
 {
-    auto fileparent = fileInfo.absolutePath();
+
+    auto fileparent = (fileInfo.isDir())?fileInfo.absoluteFilePath():fileInfo.absolutePath();
 
     auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
     if(out.exitCode!=0) return QString();
@@ -14,6 +16,30 @@ QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
     return com::helper::StringHelper::GetFirstRow(out.stdOut);
 }
 
+bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
+    return GitHelper::GetToplevel(fileInfo).isEmpty();
+}
+
+// git commit work1.h -m "valami2"
+bool GitHelper::Commit(const QString &fn)
+{
+    QString comment = "edit_"+QDateTime::currentDateTimeUtc().toString();
+    auto out = ProcessHelper::Execute(QStringLiteral(R"(git commit "%1" -m "%2")").arg(fn).arg(comment));
+    if(out.exitCode!=0) return false;
+    if(out.stdOut.isEmpty()) return false;
+    if(!out.stdErr.isEmpty()) return false;
+    return true;
+}
+
+// git push
+bool GitHelper::Push()
+{
+    auto out = ProcessHelper::Execute(QStringLiteral(R"(git push)"));
+    if(out.exitCode!=0) return false;
+    if(out.stdOut.isEmpty()) return false;
+    if(!out.stdErr.isEmpty()) return false;
+    return true;
+}
 /*
  * //git ls-tree --full-tree --name-only -r HEAD
 //git ls-files --error-unmatch common.pri
@@ -77,11 +103,7 @@ git@github.com:horvathzoltan/3dplots.git - 3dplots könyvtár van-e
 git -C /home/zoli/cmn2/a clone git@github.com:horvathzoltan/3dplots.git
 */
 bool GitHelper::clone(const QString& path, const QString& url, const QString& user, const QString& passwd){
-    //zTrace()
-
-    // TODO git könyvár fába nem lehet másik könyvtárt beleklónozni
-
-    // ha már van egy olyan mappa mint a repo   akkor sem
+    //zTrace()    
     static auto commandTmp = QStringLiteral(R"(git -C %1 clone %2)");
     auto command = commandTmp.arg(path).arg(url);
     //zInfo(command);

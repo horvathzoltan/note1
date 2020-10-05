@@ -11,8 +11,11 @@ class GitHelper
 {
 public:
     static QString GetRepoURL(const QFileInfo&);
+    bool isGitRepo(const QFileInfo& fileInfo);
     static bool clone(const QString &path, const QString &url, const QString &user, const QString &passwd);
     static QString GetToplevel(const QFileInfo &fileInfo);
+    static bool Commit(const QString &fn);
+    static bool Push();
 };
 
 #endif // GITHELPER_H

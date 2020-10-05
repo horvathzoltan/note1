@@ -50,14 +50,16 @@ bool FileSystemModelHelper::Rename(const QModelIndex &index, const QString& fn){
 
 // ha a txt változatlan, le kell menteni az aktuálisat
 // ha a neve megváltozott, át kell nevezni a modellben
-void FileSystemModelHelper::Save(const QString& fn, const QString& txt){
-    if(!_model_index.isValid()) return;
-    if(fn.isEmpty()) return;
+bool FileSystemModelHelper::Save(const QString& fn, const QString& txt)
+{
+    if(!_model_index.isValid()) return false;
+    if(fn.isEmpty()) return false;
 
     QString e;
     auto filepath = _model->filePath(_model_index);
+    auto isSaved = Save(_model_index, txt);
 
-    if(Save(_model_index, txt))
+    if(isSaved)
         e = QStringLiteral("Saved: %1").arg(filepath);
     else
         e = QStringLiteral("Unchanged: %1").arg(filepath);
@@ -65,6 +67,7 @@ void FileSystemModelHelper::Save(const QString& fn, const QString& txt){
         e += QStringLiteral(" As: %1").arg(fn);
 
     zInfo(e);
+    return isSaved;
 }
 
 QString FileSystemModelHelper::GetHash(const QString &txt){

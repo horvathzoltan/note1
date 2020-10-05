@@ -199,9 +199,14 @@ void MainWindow::updateRepoButton(const QString &giturl, const QModelIndex &inde
 }
 
 void MainWindow::updateCloneButton(const QString &giturl, const QModelIndex &index){
+//    auto path = FileSystemModelHelper::filePath(index);
+//    QFileInfo fi = QFileInfo(path);
+//    auto tl = GitHelper::GetToplevel(fi);
+//
     auto e =
         giturl.isEmpty() &&
-        FileSystemModelHelper::isDir(index); /*&&
+        FileSystemModelHelper::isDir(index);
+        ; /*&&
         QDir(FileSystemModelHelper::filePath(index)).isEmpty();*/
 
     ui->cloneButton->setEnabled(e);

@@ -17,7 +17,7 @@ public:
     static QString Load(const QModelIndex &index);
     static bool Rename(const QModelIndex &index, const QString &fn);
     static bool Save(const QModelIndex &index,  const QString& txt);
-    static void Save(const QString& fn,  const QString& txt);
+    static bool Save(const QString& fn,  const QString& txt);
     static int columnCount();
     static bool Equals(const QModelIndex&);
     static bool isDir(const QModelIndex &m);
