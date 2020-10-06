@@ -23,10 +23,14 @@ GitNote::InfoModelR GitNote::Info(const GitNote::InfoModel &m)
 // az aktuálisat menti, a megadott néven, nem a megadott fájlt!
 // TODO a FileSystemModelHelper aktuálist kell kommitolni!
 GitNote::SaveModelR GitNote::Save(const SaveModel& m){
+
     bool isSaved = FileSystemModelHelper::Save(m.txtfile.name, m.txtfile.txt);
     if(isSaved)
     {
-        if(!GitHelper::Commit(m.txtfile.name) || !GitHelper::Push()){
+        auto ix = FileSystemModelHelper::Index();
+        auto pix = FileSystemModelHelper::parent(ix);
+        auto fp = FileSystemModelHelper::filePath(pix);
+        if(!GitHelper::Commit(fp, m.txtfile.name) || !GitHelper::Push(fp)){
             zInfo("giterr");
         }
     }

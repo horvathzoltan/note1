@@ -21,10 +21,11 @@ bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
 }
 
 // git commit work1.h -m "valami2"
-bool GitHelper::Commit(const QString &fn)
+bool GitHelper::Commit(const QString &fp, const QString &fn)
 {
     QString comment = "edit_"+QDateTime::currentDateTimeUtc().toString();
-    auto out = ProcessHelper::Execute(QStringLiteral(R"(git commit "%1" -m "%2")").arg(fn).arg(comment));
+    auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2" -o "%3")").arg(fp).arg(comment).arg(fn);
+    auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return false;
     if(out.stdOut.isEmpty()) return false;
     if(!out.stdErr.isEmpty()) return false;
@@ -32,9 +33,10 @@ bool GitHelper::Commit(const QString &fn)
 }
 
 // git push
-bool GitHelper::Push()
+bool GitHelper::Push(const QString &fp)
 {
-    auto out = ProcessHelper::Execute(QStringLiteral(R"(git push)"));
+    auto cmd = QStringLiteral(R"(git -C "%1" push)").arg(fp);
+    auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return false;
     if(out.stdOut.isEmpty()) return false;
     if(!out.stdErr.isEmpty()) return false;

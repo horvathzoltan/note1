@@ -92,6 +92,7 @@ void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 {
     Q_UNUSED(index)
+    auto ix = focusedIndex();//FileSystemModelHelper::Index();
 
     setUi(
         GitNote::Save({
@@ -99,7 +100,7 @@ void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
                 ui->filenameEdit->text(),
                 ui->plainTextEdit->toPlainText()
             },
-            focusedIndex(),
+            ix,
             GitNote::DoubleClick
         })
         );
@@ -111,13 +112,14 @@ void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 */
 void MainWindow::on_EditButton_clicked()
 {
+    auto ix = focusedIndex();// FileSystemModelHelper::Index();
     setUi(
         GitNote::Save({
             {
                 ui->filenameEdit->text(),
                 ui->plainTextEdit->toPlainText()
             },
-            focusedIndex(),
+            ix,
             GitNote::EditButton
         })
         );
