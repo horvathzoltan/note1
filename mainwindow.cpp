@@ -166,7 +166,6 @@ void MainWindow::on_addNoteButton_clicked()
     GitNote::AddNote({this,focusedIndex()});
 }
 
-// TODO setUi GitNote::Settings return típusára -  SettingsModelR
 void MainWindow::on_SettingsButton_clicked()
 {
     setUi(GitNote::Settings({this}));

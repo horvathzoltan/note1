@@ -21,17 +21,22 @@ GitNote::InfoModelR GitNote::Info(const GitNote::InfoModel &m)
 }
 
 // az aktuálisat menti, a megadott néven, nem a megadott fájlt!
-// TODO a FileSystemModelHelper aktuálist kell kommitolni!
-GitNote::SaveModelR GitNote::Save(const SaveModel& m){
-
+GitNote::SaveModelR GitNote::Save(const SaveModel& m)
+{
     bool isSaved = FileSystemModelHelper::Save(m.txtfile.name, m.txtfile.txt);
     if(isSaved)
     {
         auto ix = FileSystemModelHelper::Index();
-        auto pix = FileSystemModelHelper::parent(ix);
-        auto fp = FileSystemModelHelper::filePath(pix);
-        if(!GitHelper::Commit(fp, m.txtfile.name) || !GitHelper::Push(fp)){
-            zInfo("giterr");
+        auto fi = FileSystemModelHelper::fileInfo(ix);
+        if(GitHelper::isGitRepo(fi))
+        {
+            auto pix = FileSystemModelHelper::parent(ix);
+            auto fp = FileSystemModelHelper::filePath(pix);
+
+            if(!GitHelper::Commit(fp, m.txtfile.name) || !GitHelper::Push(fp))
+            {
+                zInfo("giterr");
+            }
         }
     }
     if(m.type==Timer || m.type==Close) return {};
@@ -140,6 +145,7 @@ void GitNote::AddNote(AddNoteModel m){
     if(dm.filename.isEmpty()) return;
     //auto oldfn = model->filePath(ix);
     QString newfile;
+    auto fi = FileSystemModelHelper::fileInfo(m.fileindex);
     if(FileSystemModelHelper::isDir(m.fileindex))
     {
         newfile = QDir(FileSystemModelHelper::filePath(m.fileindex)).filePath(dm.filename);
@@ -149,13 +155,18 @@ void GitNote::AddNote(AddNoteModel m){
         newfile = FileSystemModelHelper::fileInfo(m.fileindex).absoluteDir().filePath(dm.filename);
     }
 
+    if(GitHelper::isGitRepo(fi)){
+        //GitHelper::Add();
+        zTrace()
+    }
     QFile f(newfile);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
     auto isok = f.open(QIODevice::NewOnly| QIODevice::Text);
 #else
-    auto isok = !QFileInfo::exists(newfile) && f.open(QIODevice::Text);
+    auto isok = (!QFileInfo::exists(newfile)) && f.open(QIODevice::ReadWrite|QIODevice::Text);
 #endif
-    if(isok){
+    if(isok)
+    {
         f.close();
         zInfo(GitNote::MSG_ADDNEW.arg(GitNote::FILE).arg(newfile));
     }

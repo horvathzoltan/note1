@@ -17,12 +17,13 @@ QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
 }
 
 bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
-    return GitHelper::GetToplevel(fileInfo).isEmpty();
+    return !GitHelper::GetToplevel(fileInfo).isEmpty();
 }
 
 // git commit work1.h -m "valami2"
 bool GitHelper::Commit(const QString &fp, const QString &fn)
 {
+    //TODO user@userpc
     QString comment = "edit_"+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2" -o "%3")").arg(fp).arg(comment).arg(fn);
     auto out = ProcessHelper::Execute(cmd);
