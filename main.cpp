@@ -10,6 +10,7 @@
 #include "filesystemmodelhelper.h"
 
 Settings settings;
+Environment environment;
 
 int main(int argc, char *argv[])
 {

@@ -4,6 +4,10 @@
 #include "filesystemmodelhelper.h"
 #include "common/logger/log.h"
 #include <QDateTime>
+#include "filenamehelper.h"
+#include "settings.h"
+
+extern Environment environment;
 
 QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
 {
@@ -22,9 +26,8 @@ bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
 
 // git commit work1.h -m "valami2"
 bool GitHelper::Commit(const QString &fp, const QString &fn)
-{
-    //TODO user@userpc
-    QString comment = "edit_"+QDateTime::currentDateTimeUtc().toString();
+{    
+    QString comment = "update_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2" -o "%3")").arg(fp).arg(comment).arg(fn);
     auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return false;
