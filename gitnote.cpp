@@ -33,7 +33,7 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
             auto pix = FileSystemModelHelper::parent(ix);
             auto fp = FileSystemModelHelper::filePath(pix);
 
-            if(!GitHelper::Commit(fp, m.txtfile.name) || !GitHelper::Push(fp))
+            if(!GitHelper::Commit(fp, m.txtfile.name, "commit") || !GitHelper::Push(fp))
             {
                 zInfo("giterr");
             }
@@ -99,7 +99,6 @@ const QString GitNote::CREATE =  QStringLiteral("create");
 const QString GitNote::FILE =  QStringLiteral("file");
 const QString GitNote::DELETE =  QStringLiteral("delete");
 
-
 void GitNote::AddDir(AddDirModel m){
     //auto ix = focusedIndex();
     auto mr = GitNote::DisplayNewDirDialog(m.w, MSG_ADDNEWDIALOG.arg(DIR));
@@ -115,6 +114,8 @@ void GitNote::AddDir(AddDirModel m){
         zInfo(MSG_ADDNEW.arg(DIR).arg(mr.filename))
     else
         zInfo(MSG_FAILEDTO.arg(CREATE).arg(DIR).arg(mr.filename));
+
+    //TODO addDir git
 }
 
 NewFileDialog::Model GitNote::DisplayNewDirDialog(QMainWindow *main, const QString& title){
@@ -137,34 +138,50 @@ NewFileDialog::Model GitNote::DisplayNewNoteDialog(QMainWindow *main, const QStr
     return dialog.model();
 }
 
+/*
+    if(isSaved)
+    {
+        auto ix = FileSystemModelHelper::Index();
+        auto fi = FileSystemModelHelper::fileInfo(ix);
+        if(GitHelper::isGitRepo(fi))
+        {
+            auto pix = FileSystemModelHelper::parent(ix);
+            auto fp = FileSystemModelHelper::filePath(pix);
 
+if(!GitHelper::Commit(fp, m.txtfile.name) || !GitHelper::Push(fp))
+{
+    zInfo("giterr");
+}
+}
+}
+*/
+
+
+// a model a fókuszált indexet tartalmazza
 void GitNote::AddNote(AddNoteModel m){
-    //auto ix = focusedIndex();
+    if(!m.fileindex.isValid()) return;
 
     auto dm = DisplayNewNoteDialog(m.w, GitNote::MSG_ADDNEWDIALOG.arg(GitNote::FILE));
     if(dm.filename.isEmpty()) return;
-    //auto oldfn = model->filePath(ix);
+
     QString newfile;
     auto fi = FileSystemModelHelper::fileInfo(m.fileindex);
-    if(FileSystemModelHelper::isDir(m.fileindex))
+    if(FileSystemModelHelper::isDir(m.fileindex)) // ha dirre mutat, akkor bele
     {
         newfile = QDir(FileSystemModelHelper::filePath(m.fileindex)).filePath(dm.filename);
     }
-    else
+    else // ha fájlra, akkor mellé - a szülő lesz a születendő szüleje is
     {
         newfile = FileSystemModelHelper::fileInfo(m.fileindex).absoluteDir().filePath(dm.filename);
     }
 
-    if(GitHelper::isGitRepo(fi)){
-        //GitHelper::Add();
-        zTrace()
-    }
     QFile f(newfile);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
     auto isok = f.open(QIODevice::NewOnly| QIODevice::Text);
 #else
     auto isok = (!QFileInfo::exists(newfile)) && f.open(QIODevice::ReadWrite|QIODevice::Text);
-#endif
+#endif    
+
     if(isok)
     {
         f.close();
@@ -172,6 +189,22 @@ void GitNote::AddNote(AddNoteModel m){
     }
     else{
         zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::CREATE).arg(GitNote::FILE).arg(newfile));
+    }
+
+    auto pix = FileSystemModelHelper::parent(m.fileindex); // szülő mappa
+    auto fi2 = FileSystemModelHelper::fileInfo(pix);
+    auto is_gitrepo = GitHelper::isGitRepo(fi2);
+
+    if(is_gitrepo){
+        auto fp = FileSystemModelHelper::filePath(pix);
+        auto isok_add = GitHelper::Add(fp, dm.filename);
+        auto isok_commit = GitHelper::Commit(fp, dm.filename, "add");
+        auto isok_push = GitHelper::Push(fp);
+
+        if(!isok_add || !isok_commit || !isok_push)
+        {
+            zInfo("giterr");
+        }
     }
 }
 
@@ -206,4 +239,10 @@ void GitNote::Delete(DeleteModel m){
         if(!FileSystemModelHelper::Remove(m.fileindex))
             zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
     }
+
+    // TODO git delete
+    /*
+git rm file1.txt
+git commit -m "remove file1.txt"
+    */
 }

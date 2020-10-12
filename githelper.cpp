@@ -24,14 +24,24 @@ bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
     return !GitHelper::GetToplevel(fileInfo).isEmpty();
 }
 
+// git add work1.h
+bool GitHelper::Add(const QString &fp, const QString &fn)
+{
+    //QString comment = "add_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
+    auto cmd = QStringLiteral(R"(git -C "%1" add "%2")").arg(fp).arg(fn);
+    auto out = ProcessHelper::Execute(cmd);
+    if(out.exitCode!=0) return false;
+    if(!out.stdErr.isEmpty()) return false;
+    return true;
+}
+
 // git commit work1.h -m "valami2"
-bool GitHelper::Commit(const QString &fp, const QString &fn)
+bool GitHelper::Commit(const QString &fp, const QString &fn, const QString& desc)
 {    
-    QString comment = "update_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
+    QString comment = desc+"_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2" -o "%3")").arg(fp).arg(comment).arg(fn);
     auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return false;
-    if(out.stdOut.isEmpty()) return false;
     if(!out.stdErr.isEmpty()) return false;
     return true;
 }
@@ -42,8 +52,7 @@ bool GitHelper::Push(const QString &fp)
     auto cmd = QStringLiteral(R"(git -C "%1" push)").arg(fp);
     auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return false;
-    if(out.stdOut.isEmpty()) return false;
-    if(!out.stdErr.isEmpty()) return false;
+    //if(!out.stdErr.isEmpty()) return false;
     return true;
 }
 /*
