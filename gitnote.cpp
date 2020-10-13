@@ -28,7 +28,7 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
     {
         auto ix = FileSystemModelHelper::Index();
         auto fi = FileSystemModelHelper::fileInfo(ix);
-        if(GitHelper::isGitRepo(fi))
+        if(GitHelper::isTracked(fi))
         {
             auto pix = FileSystemModelHelper::parent(ix);
             auto fp = FileSystemModelHelper::filePath(pix);
@@ -114,8 +114,6 @@ void GitNote::AddDir(AddDirModel m){
         zInfo(MSG_ADDNEW.arg(DIR).arg(mr.filename))
     else
         zInfo(MSG_FAILEDTO.arg(CREATE).arg(DIR).arg(mr.filename));
-
-    //TODO addDir git
 }
 
 NewFileDialog::Model GitNote::DisplayNewDirDialog(QMainWindow *main, const QString& title){
@@ -137,7 +135,23 @@ NewFileDialog::Model GitNote::DisplayNewNoteDialog(QMainWindow *main, const QStr
         return NewFileDialog::Model();
     return dialog.model();
 }
+/*
+    if(isSaved)
+    {
+        auto ix = FileSystemModelHelper::Index();
+        auto fi = FileSystemModelHelper::fileInfo(ix);
+        if(GitHelper::isGitRepo(fi))
+        {
+            auto pix = FileSystemModelHelper::parent(ix);
+            auto fp = FileSystemModelHelper::filePath(pix);
 
+if(!GitHelper::Commit(fp, m.txtfile.name) || !GitHelper::Push(fp))
+{
+    zInfo("giterr");
+}
+}
+}
+*/
 /*
     if(isSaved)
     {
@@ -197,8 +211,8 @@ void GitNote::AddNote(AddNoteModel m){
 
     if(is_gitrepo){
         auto fp = FileSystemModelHelper::filePath(pix);
-        auto isok_add = GitHelper::Add(fp, dm.filename);
-        auto isok_commit = GitHelper::Commit(fp, dm.filename, "add");
+        auto isok_add = GitHelper::Add(fp, newfile);
+        auto isok_commit = GitHelper::Commit(fp, newfile, "add");
         auto isok_push = GitHelper::Push(fp);
 
         if(!isok_add || !isok_commit || !isok_push)
@@ -228,7 +242,28 @@ void GitNote::Delete(DeleteModel m){
     //auto ix = focusedIndex();
     if(!FileSystemModelHelper::isValid()) return;
     if(FileSystemModelHelper::Equals(m.fileindex)) return;
+
+    //auto newname = FileSystemModelHelper::filePath(newix);
+    auto pix = FileSystemModelHelper::parent(m.fileindex); // szülő mappa
+    auto fi2 = FileSystemModelHelper::fileInfo(pix);
+    auto is_gitrepo = GitHelper::isGitRepo(fi2);
     auto fn = FileSystemModelHelper::fileName(m.fileindex);
+
+    //auto fn = fi2.fileName();
+    if(is_gitrepo)
+    {
+        auto fp = FileSystemModelHelper::filePath(pix);
+        auto isok_rm = GitHelper::Rm(fp, fn);
+        auto isok_commit = GitHelper::Commit(fp, QString(), "rm");
+        auto isok_push = GitHelper::Push(fp);
+
+        if(!isok_rm || !isok_commit || !isok_push)
+        {
+            zInfo("giterr");
+        }
+    }
+    // TODO git delete
+
     if(FileSystemModelHelper::isDir(m.fileindex))
     {
         if(!FileSystemModelHelper::Rmdir(m.fileindex))
@@ -240,7 +275,9 @@ void GitNote::Delete(DeleteModel m){
             zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
     }
 
-    // TODO git delete
+
+
+
     /*
 git rm file1.txt
 git commit -m "remove file1.txt"

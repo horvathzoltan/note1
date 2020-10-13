@@ -11,10 +11,13 @@ extern Environment environment;
 
 QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
 {
-
     auto fileparent = (fileInfo.isDir())?fileInfo.absoluteFilePath():fileInfo.absolutePath();
+    //auto fn = fileInfo.fileName();
 
-    auto out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent));
+    auto cmd = QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent);
+    //auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
+
+    auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return QString();
     if(out.stdOut.isEmpty()) return QString();
     return com::helper::StringHelper::GetFirstRow(out.stdOut);
@@ -22,6 +25,16 @@ QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
 
 bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
     return !GitHelper::GetToplevel(fileInfo).isEmpty();
+}
+
+bool GitHelper::isTracked(const QFileInfo& fileInfo){
+    auto fn = fileInfo.fileName();
+    auto fileparent = (fileInfo.isDir())?fileInfo.absoluteFilePath():fileInfo.absolutePath();
+
+    auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
+    auto out = ProcessHelper::Execute(cmd);
+    if(out.exitCode!=0) return false;
+    return true;
 }
 
 // git add work1.h
@@ -35,11 +48,22 @@ bool GitHelper::Add(const QString &fp, const QString &fn)
     return true;
 }
 
+bool GitHelper::Rm(const QString &fp, const QString &fn)
+{
+    //QString comment = "add_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
+    auto cmd = QStringLiteral(R"(git -C "%1" rm "%2")").arg(fp).arg(fn);
+    auto out = ProcessHelper::Execute(cmd);
+    if(out.exitCode!=0) return false;
+    if(!out.stdErr.isEmpty()) return false;
+    return true;
+}
+
 // git commit work1.h -m "valami2"
 bool GitHelper::Commit(const QString &fp, const QString &fn, const QString& desc)
 {    
     QString comment = desc+"_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
-    auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2" -o "%3")").arg(fp).arg(comment).arg(fn);
+    auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2")").arg(fp).arg(comment);
+    if(!fn.isEmpty()) cmd+= QStringLiteral(R"( -o "%1")").arg(fn);
     auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return false;
     if(!out.stdErr.isEmpty()) return false;
@@ -68,6 +92,7 @@ bool GitHelper::Push(const QString &fp)
 ///
 QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
 {
+    //if(!isGitRepo(fileInfo)) return "";
    auto filepath = fileInfo.absoluteFilePath();
    //auto fileparent = fileInfo.absolutePath();
 
