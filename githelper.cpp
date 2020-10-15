@@ -24,7 +24,8 @@ QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
 }
 
 bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
-    return !GitHelper::GetToplevel(fileInfo).isEmpty();
+    //return !GitHelper::GetToplevel(fileInfo).isEmpty();
+    return GitHelper::GetRepoURL(fileInfo).startsWith('g');
 }
 
 bool GitHelper::isTracked(const QFileInfo& fileInfo){
@@ -107,10 +108,18 @@ QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
 
     //if(!FileSystemModelHelper::isDir(index))
     if(!fileInfo.isDir())
-    {         out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
-        if(out.exitCode!=0) return rootpath;
-        if(out.stdOut.isEmpty()) return rootpath;
-        file = com::helper::StringHelper::GetFirstRow(out.stdOut);
+    {
+        out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
+        if(out.exitCode!=0) return filepath;
+        if(out.stdOut.isEmpty()) return filepath;
+        file = filepath.mid(rootpath.length()+1);
+    }
+    else
+    {
+        out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
+        if(out.exitCode!=0) return filepath;
+        if(out.stdOut.isEmpty()) return filepath;
+        file = filepath.mid(rootpath.length()+1);
     }
 
     out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(rootpath));

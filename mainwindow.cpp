@@ -27,8 +27,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    for (int i = 1; i < FileSystemModelHelper::columnCount(); ++i)
-        ui->fileTreeView->hideColumn(i);
+//    for (int i = 1; i < FileSystemModelHelper::columnCount(); ++i)
+//        ui->fileTreeView->hideColumn(i);
+    //ui->fileTreeView->setColumnHidden(3, false);
+    //ui->fileTreeView->hideColumn(3);
     UpdateEditorState();
     connect(&_autosave_timer, &QTimer::timeout, this, &MainWindow::on_autosave_timer_timeout);
 }
@@ -81,14 +83,18 @@ void MainWindow::updateFileTreeView()
 
     ui->fileTreeView->setModel(m);
     ui->fileTreeView->setRootIndex(ix);
+
+    for (int i = 1; i < FileSystemModelHelper::columnCount(); ++i)
+            ui->fileTreeView->hideColumn(i);
 }
 
+//singleclick
 void MainWindow::on_fileTreeView_clicked(const QModelIndex &index)
 {
     setUi(GitNote::Info({index}));
 }
 
-
+//doubleclick
 void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
 {
     Q_UNUSED(index)
@@ -161,9 +167,11 @@ void MainWindow::on_deleteButton_clicked()
  * új note
 */
 
+//NewNote
 void MainWindow::on_addNoteButton_clicked()
 {
-    GitNote::AddNote({this,focusedIndex()});
+    //TODO kell-e megnyitni az újat?????
+    GitNote::AddNewNote({this,focusedIndex()});
 }
 
 void MainWindow::on_SettingsButton_clicked()
@@ -177,9 +185,19 @@ void MainWindow::setUi(GitNote::SettingsModelR m)
         updateFileTreeView();
 }
 
+//AddToRepo
 void MainWindow::on_addToRepoButton_clicked()
 {
-    zTrace()
+    //TODO letiltjuk a gombot...
+    setUi(GitNote::AddNote({this,focusedIndex()}));
+}
+
+void MainWindow::setUi(GitNote::AddNoteModelR m)
+{
+    if(m.state)
+    {
+        setUi(GitNote::InfoModelR {m.giturl, m.index});
+    }
 }
 
 void MainWindow::on_cloneButton_clicked()
@@ -264,5 +282,5 @@ void MainWindow::UpdateActionButtonState(const QModelIndex &index){
 ///
 void MainWindow::setActionButtonState(bool x){
     ui->EditButton->setEnabled(x);
-    ui->deleteButton->setEnabled(x);
+    //ui->deleteButton->setEnabled(x);
 }

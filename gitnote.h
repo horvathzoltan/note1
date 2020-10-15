@@ -88,13 +88,20 @@ public:
        QMainWindow*w;
        const QModelIndex& fileindex;
    };
-   static void AddNote(AddNoteModel m);
+   static void AddNewNote(AddNoteModel m);
 
    struct DeleteModel{
        const QModelIndex& fileindex;
    };
 
    static void Delete(DeleteModel m);
+
+   struct AddNoteModelR{
+       bool state;
+       QString giturl;
+       const QModelIndex& index;
+   };
+   static AddNoteModelR AddNote(AddNoteModel m);
 private:    
     static TextFileModel Open(const QModelIndex& index);
     static CloneDialog::Model DisplayCloneDialog(QMainWindow *w, const QString& title);

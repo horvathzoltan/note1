@@ -54,6 +54,7 @@ public:
     void setUi(GitNote::InfoModelR m);
     //CloneDialog::Model DisplayCloneDialog(const QString &title);
     void setUi(GitNote::SettingsModelR m);
+    void setUi(GitNote::AddNoteModelR m);
 private slots:
     void on_fileTreeView_doubleClicked(const QModelIndex &index);
     void on_EditButton_clicked();
