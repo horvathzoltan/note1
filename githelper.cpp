@@ -75,6 +75,17 @@ bool GitHelper::Commit(const QString &fp, const QString &fn, const QString& desc
 bool GitHelper::Push(const QString &fp)
 {
     auto cmd = QStringLiteral(R"(git -C "%1" push)").arg(fp);
+    //TODO merge?
+    /*
+     * 1. git commit // lokálisan
+2. git fetch // leszedni a változást   <--pullozás
+3. git merge // merge
+4. ha van CONFLICT
+        git mergetool // feloldani
+        goto 1
+    amúgy
+        git push
+*/
     auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return false;
     //if(!out.stdErr.isEmpty()) return false;

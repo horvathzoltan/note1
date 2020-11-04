@@ -189,7 +189,13 @@ void MainWindow::setUi(GitNote::SettingsModelR m)
 void MainWindow::on_addToRepoButton_clicked()
 {
     //TODO letiltjuk a gombot...
-    setUi(GitNote::AddNote({this,focusedIndex()}));
+
+    GitNote::AddNoteModel m{this,focusedIndex()};
+    ui->addToRepoButton->setDisabled(true);
+    GitNote::AddNoteModelR a = GitNote::AddNote(m);
+
+    //auto t = FileSystemModelHelper::isDir(a.index);
+    setUi(a);
 }
 
 void MainWindow::setUi(GitNote::AddNoteModelR m)

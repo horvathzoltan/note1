@@ -203,4 +203,28 @@ void MainWindow::SettingsProcess(){
     updateFileTreeView();
 }
 
+**********************
 
+zoli@ubul:~/fejlesztes_notes/notes1/3dplots$ git fetch
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 1), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), 692 bytes | 40.00 KiB/s, done.
+From github.com:horvathzoltan/3dplots
+   8ebf135..dda8683  master     -> origin/master
+zoli@ubul:~/fejlesztes_notes/notes1/3dplots$ git merge
+Auto-merging teszt13.txt
+CONFLICT (content): Merge conflict in teszt13.txt
+Automatic merge failed; fix conflicts and then commit the result.
+zoli@ubul:~/fejlesztes_notes/notes1/3dplots$
+
+///pusholás:
+1. git commit // lokálisan
+2. git fetch // leszedni a változást   <--pullozás
+3. git merge // merge
+4. ha van CONFLICT
+        git mergetool // feloldani
+        goto 1
+    amúgy
+        git push
