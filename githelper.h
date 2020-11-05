@@ -18,7 +18,7 @@ public:
     static bool Commit(const QString &fp, const QString &fn, const QString& desc);
     static bool Add(const QString &fp, const QString &fn);
     static bool Rm(const QString &fp, const QString &fn);
-    static bool Push(const QString &fp);
+    static bool Push(const QString &fp, QObject *parent);
 };
 
 #endif // GITHELPER_H

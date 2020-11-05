@@ -213,10 +213,12 @@ remote: Total 3 (delta 1), reused 0 (delta 0), pack-reused 0
 Unpacking objects: 100% (3/3), 692 bytes | 40.00 KiB/s, done.
 From github.com:horvathzoltan/3dplots
    8ebf135..dda8683  master     -> origin/master
+
 zoli@ubul:~/fejlesztes_notes/notes1/3dplots$ git merge
 Auto-merging teszt13.txt
 CONFLICT (content): Merge conflict in teszt13.txt
 Automatic merge failed; fix conflicts and then commit the result.
+
 zoli@ubul:~/fejlesztes_notes/notes1/3dplots$
 
 ///pusholás:

@@ -50,7 +50,7 @@ void MainWindow::on_autosave_timer_timeout(){
             },
             focusedIndex(),
             GitNote::Timer
-        })
+                      }, this->parent())
         );
 }
 
@@ -108,7 +108,7 @@ void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
             },
             ix,
             GitNote::DoubleClick
-        })
+        },this->parent())
         );
 }
 
@@ -127,7 +127,7 @@ void MainWindow::on_EditButton_clicked()
             },
             ix,
             GitNote::EditButton
-        })
+        },this->parent())
         );
 }
 
@@ -141,7 +141,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             },
             focusedIndex(),
             GitNote::Close
-        })
+        },this->parent())
         );
 }
 

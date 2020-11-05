@@ -21,7 +21,7 @@ GitNote::InfoModelR GitNote::Info(const GitNote::InfoModel &m)
 }
 
 // az aktuálisat menti, a megadott néven, nem a megadott fájlt!
-GitNote::SaveModelR GitNote::Save(const SaveModel& m)
+GitNote::SaveModelR GitNote::Save(const SaveModel& m, QObject *parent)
 {
     static QString FN = "Update";
     bool isSaved = FileSystemModelHelper::Save(m.txtfile.name, m.txtfile.txt);
@@ -35,7 +35,7 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
             auto fp = FileSystemModelHelper::filePath(pix);
 
             bool is_comm_ok = GitHelper::Commit(fp, m.txtfile.name, FN);
-            bool is_push_ok = GitHelper::Push(fp);
+            bool is_push_ok = GitHelper::Push(fp, parent);
             if(!is_comm_ok || !is_push_ok)
             {
                 zInfo("giterr");
@@ -192,7 +192,7 @@ GitNote::AddNoteModelR GitNote::AddNote(AddNoteModel m){
         auto fp = FileSystemModelHelper::filePath(pix);
         auto isok_rm = GitHelper::Add(fp, fn);
         auto isok_commit = GitHelper::Commit(fp, QString(), FN);
-        auto isok_push = GitHelper::Push(fp);
+        auto isok_push = GitHelper::Push(fp, nullptr);
 
         if(!isok_rm || !isok_commit || !isok_push)
         {
@@ -253,7 +253,7 @@ void GitNote::AddNewNote(AddNoteModel m){
         auto fp = FileSystemModelHelper::filePath(pix);
         auto isok_add = GitHelper::Add(fp, newfile);
         auto isok_commit = GitHelper::Commit(fp, newfile, FN);
-        auto isok_push = GitHelper::Push(fp);
+        auto isok_push = GitHelper::Push(fp, nullptr);
 
         if(!isok_add || !isok_commit || !isok_push)
         {
@@ -296,7 +296,7 @@ void GitNote::Delete(DeleteModel m){
         auto fp = FileSystemModelHelper::filePath(pix);
         auto isok_rm = GitHelper::Rm(fp, fn);
         auto isok_commit = GitHelper::Commit(fp, QString(), FN);
-        auto isok_push = GitHelper::Push(fp);
+        auto isok_push = GitHelper::Push(fp, nullptr);
 
         if(!isok_rm || !isok_commit || !isok_push)
         {

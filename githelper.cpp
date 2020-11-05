@@ -17,7 +17,7 @@ QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
     auto cmd = QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent);
     //auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
 
-    auto out = ProcessHelper::Execute(cmd);
+    auto out = ProcessHelper::Execute(cmd, nullptr);
     if(out.exitCode!=0) return QString();
     if(out.stdOut.isEmpty()) return QString();
     return com::helper::StringHelper::GetFirstRow(out.stdOut);
@@ -33,7 +33,7 @@ bool GitHelper::isTracked(const QFileInfo& fileInfo){
     auto fileparent = (fileInfo.isDir())?fileInfo.absoluteFilePath():fileInfo.absolutePath();
 
     auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
-    auto out = ProcessHelper::Execute(cmd);
+    auto out = ProcessHelper::Execute(cmd, nullptr);
     if(out.exitCode!=0) return false;
     return true;
 }
@@ -43,7 +43,7 @@ bool GitHelper::Add(const QString &fp, const QString &fn)
 {
     //QString comment = "add_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" add "%2")").arg(fp).arg(fn);
-    auto out = ProcessHelper::Execute(cmd);
+    auto out = ProcessHelper::Execute(cmd, nullptr);
     if(out.exitCode!=0) return false;
     if(!out.stdErr.isEmpty()) return false;
     return true;
@@ -53,7 +53,7 @@ bool GitHelper::Rm(const QString &fp, const QString &fn)
 {
     //QString comment = "add_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" rm "%2")").arg(fp).arg(fn);
-    auto out = ProcessHelper::Execute(cmd);
+    auto out = ProcessHelper::Execute(cmd, nullptr);
     if(out.exitCode!=0) return false;
     if(!out.stdErr.isEmpty()) return false;
     return true;
@@ -65,29 +65,36 @@ bool GitHelper::Commit(const QString &fp, const QString &fn, const QString& desc
     QString comment = desc+"_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2")").arg(fp).arg(comment);
     if(!fn.isEmpty()) cmd+= QStringLiteral(R"( -o "%1")").arg(fn);
-    auto out = ProcessHelper::Execute(cmd);
+    auto out = ProcessHelper::Execute(cmd, nullptr);
     if(out.exitCode!=0) return false;
     if(!out.stdErr.isEmpty()) return false;
     return true;
 }
 
 // git push
-bool GitHelper::Push(const QString &fp)
+bool GitHelper::Push(const QString &fp, QObject *parent)
 {
-    auto cmd = QStringLiteral(R"(git -C "%1" push)").arg(fp);
-    //TODO merge?
-    /*
-     * 1. git commit // lokálisan
-2. git fetch // leszedni a változást   <--pullozás
-3. git merge // merge
-4. ha van CONFLICT
-        git mergetool // feloldani
-        goto 1
-    amúgy
-        git push
-*/
-    auto out = ProcessHelper::Execute(cmd);
+
+//    auto cmd = QStringLiteral( R"(git -C "%1" push)").arg(fp);
+//    auto out = ProcessHelper::Execute(cmd);
+//    if(out.exitCode!=0) return false;
+
+    auto cmd = QStringLiteral(R"(git -C "%1" fetch)").arg(fp);
+    auto out = ProcessHelper::Execute(cmd, nullptr);
     if(out.exitCode!=0) return false;
+
+    cmd = QStringLiteral(R"(git -C "%1" merge)").arg(fp);
+    out = ProcessHelper::Execute(cmd, nullptr);
+    if(out.exitCode!=0 || out.stdOut.contains("CONFLICT")){
+        cmd = QStringLiteral(R"(git -C "%1" mergetool)").arg(fp);
+        out = ProcessHelper::Execute(cmd, parent);
+    }
+    else{
+        cmd = QStringLiteral( R"(git -C "%1" push)").arg(fp);
+        out = ProcessHelper::Execute(cmd, nullptr);
+        if(out.exitCode!=0) return false;
+    }
+
     //if(!out.stdErr.isEmpty()) return false;
     return true;
 }
@@ -120,20 +127,23 @@ QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
     //if(!FileSystemModelHelper::isDir(index))
     if(!fileInfo.isDir())
     {
-        out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
+        auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath);
+        out = ProcessHelper::Execute(cmd, nullptr);
         if(out.exitCode!=0) return filepath;
         if(out.stdOut.isEmpty()) return filepath;
         file = filepath.mid(rootpath.length()+1);
     }
     else
     {
-        out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath));
+        auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath);
+        out = ProcessHelper::Execute(cmd, nullptr);
         if(out.exitCode!=0) return filepath;
         if(out.stdOut.isEmpty()) return filepath;
         file = filepath.mid(rootpath.length()+1);
     }
 
-    out = ProcessHelper::Execute(QStringLiteral(R"(git -C "%1" remote -v)").arg(rootpath));
+    auto cmd= QStringLiteral(R"(git -C "%1" remote -v)").arg(rootpath);
+    out = ProcessHelper::Execute(cmd, nullptr);
     if(out.exitCode==0){
         auto bl= com::helper::StringHelper::toStringList(out.stdOut);
         static QRegularExpression r1(com::helper::StringHelper::join({'\t', ' '}, '|'));
@@ -167,7 +177,7 @@ bool GitHelper::clone(const QString& path, const QString& url, const QString& us
     static auto commandTmp = QStringLiteral(R"(git -C %1 clone %2)");
     auto command = commandTmp.arg(path).arg(url);
     //zInfo(command);
-    auto out = ProcessHelper::Execute(command);
+    auto out = ProcessHelper::Execute(command, nullptr);
     return false;
 
 }

@@ -23,10 +23,19 @@ QString ProcessHelper::Output::ToString(){
     return e;
 }
 
-ProcessHelper::Output ProcessHelper::Execute(const QString& cmd){
-    QProcess process;
-    process.start(cmd);
+ProcessHelper::Output ProcessHelper::Execute(const QString& cmd, QObject *parent){
+    QProcess process(parent);
+    process.setWorkingDirectory("/home/zoli");
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.startDetached(cmd);
+   // process.waitForStarted(-1);
+
+    auto s = process.state();
+    auto e = process.error();
+
     process.waitForFinished(-1); // will wait forever until finished
+
+
     return {process.readAllStandardOutput(), process.readAllStandardError(), process.exitCode()};
 }
 
@@ -38,7 +47,7 @@ QString ProcessHelper::Execute(const QStringList& cmds){
     Output e;
 
     foreach(auto cmd, cmds){
-        auto r = Execute(cmd);
+        auto r = Execute(cmd, nullptr);
         e.stdOut += r.stdOut;
         e.stdErr += r.stdErr;
         e.exitCode = r.exitCode;

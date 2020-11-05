@@ -1,6 +1,7 @@
-#ifndef PROCESSHELPER_H
-#define PROCESSHELPER_H
+#ifndef PROCESSHELPER1_H
+#define PROCESSHELPER1_H
 
+#include <QObject>
 #include <QString>
 
 class ProcessHelper
@@ -19,7 +20,7 @@ public:
 
     //static QString Execute(const QString& cmd);
     static QString Execute(const QStringList &cmds);
-    static Output Execute(const QString &cmd);
+    static Output Execute(const QString &cmd,QObject *parent);
 };
 
 #endif // PROCESSHELPER_H
