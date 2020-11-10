@@ -8,6 +8,7 @@
 #include "ui_mainwindow.h"
 //#include "common/helper/file/filehelper.h"
 #include <QFileSystemModel>
+#include <QMessageBox>
 #include "common/logger/log.h"
 //#include <QCryptographicHash>
 
@@ -50,18 +51,28 @@ void MainWindow::on_autosave_timer_timeout(){
             },
             focusedIndex(),
             GitNote::Timer
-                      }, this->parent())
+                      })
         );
 }
 
 
-void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *w)
+void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *w, int flag)
 {
     Q_UNUSED( errlevel )
     Q_UNUSED( loci )
     Q_UNUSED( st )
 
-    reinterpret_cast<MainWindow*>(w)->statusBar()->showMessage(msg, 2000);
+    if(flag<1)
+    {
+        reinterpret_cast<MainWindow*>(w)->statusBar()->showMessage(msg, 2000);
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText(msg);
+        int r = msgBox.exec();
+        //reinterpret_cast<MainWindow*>(w)->statusBar()->showMessage(msg, 2000);
+    }
 }
 
 /*
@@ -108,7 +119,7 @@ void MainWindow::on_fileTreeView_doubleClicked(const QModelIndex &index)
             },
             ix,
             GitNote::DoubleClick
-        },this->parent())
+        })
         );
 }
 
@@ -127,7 +138,7 @@ void MainWindow::on_EditButton_clicked()
             },
             ix,
             GitNote::EditButton
-        },this->parent())
+        })
         );
 }
 
@@ -141,7 +152,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             },
             focusedIndex(),
             GitNote::Close
-        },this->parent())
+        })
         );
 }
 

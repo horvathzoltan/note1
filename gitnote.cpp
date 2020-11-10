@@ -21,9 +21,10 @@ GitNote::InfoModelR GitNote::Info(const GitNote::InfoModel &m)
 }
 
 // az aktuálisat menti, a megadott néven, nem a megadott fájlt!
-GitNote::SaveModelR GitNote::Save(const SaveModel& m, QObject *parent)
+// TODO miért de visszanyitja?
+GitNote::SaveModelR GitNote::Save(const SaveModel& m)
 {
-    static QString FN = "Update";
+    static const QString FN = "Update";
     bool isSaved = FileSystemModelHelper::Save(m.txtfile.name, m.txtfile.txt);
     if(isSaved)
     {
@@ -34,14 +35,22 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m, QObject *parent)
             auto pix = FileSystemModelHelper::parent(ix);
             auto fp = FileSystemModelHelper::filePath(pix);
 
-            bool is_comm_ok = GitHelper::Commit(fp, m.txtfile.name, FN);
-            bool is_push_ok = GitHelper::Push(fp, parent);
-            if(!is_comm_ok || !is_push_ok)
-            {
-                zInfo("giterr");
-            }
+//            QString e;
+//            bool is_comm_ok = GitHelper::Commit(fp, m.txtfile.name, FN, &e);
+//            if(!is_comm_ok)
+//            {
+//                zError2("commit err\n\n"+e, 2);
+//                goto end;
+//            }
+            //bool is_push_ok = GitHelper::Push(fp, &e);
+            bool is_push_ok = GitHelper::Refresh(fp, FN, GitHelper::Push);
+//            if(!is_comm_ok || !is_push_ok)
+//            {
+//                zError2("push err\n\n"+e, 2);
+//            }
         }
     }
+    end:
     if(m.type==Timer || m.type==Close) return {};
     auto mr = GitNote::Open(m.index);
     return {mr, m.index, m.type};
@@ -62,6 +71,23 @@ GitNote::TextFileModel GitNote::Open(const QModelIndex& index)
     if(FileSystemModelHelper::isDir(index)) return{};
     if(FileSystemModelHelper::Equals(index)) return{};
     auto filename = FileSystemModelHelper::fileName(index);
+
+    //auto filepath = FileSystemModelHelper::parent(index);
+//    auto ix = FileSystemModelHelper::Index();
+    auto pix = FileSystemModelHelper::parent(index);
+    auto fp = FileSystemModelHelper::filePath(pix);
+
+    static const QString FN = "Fetch";
+
+//    QString e;
+//    bool is_comm_ok = GitHelper::Fetch(fp, &e);
+//    if(!is_comm_ok)
+//    {
+//        zError2("fetch err\n\n"+e, 2);
+//        //goto end;
+//    }
+    GitHelper::Refresh(fp, FN, GitHelper::Pull);
+
     auto txt2 = FileSystemModelHelper::Load(index);
     return {filename, txt2};
 }
@@ -189,20 +215,26 @@ GitNote::AddNoteModelR GitNote::AddNote(AddNoteModel m){
     //auto fn = fi2.fileName();
     if(is_gitrepo)
     {
+        QString e;
         auto fp = FileSystemModelHelper::filePath(pix);
-        auto isok_rm = GitHelper::Add(fp, fn);
-        auto isok_commit = GitHelper::Commit(fp, QString(), FN);
-        auto isok_push = GitHelper::Push(fp, nullptr);
+        auto isok = GitHelper::Add(fp, fn);
+        if(isok)
+        {
+            isok = GitHelper::Refresh(fp, FN, GitHelper::Type::Push);
+//        auto isok_commit = GitHelper::Commit(fp, QString(), FN, &e);
+//        auto isok_push = GitHelper::Push(fp, &e);
 
-        if(!isok_rm || !isok_commit || !isok_push)
-        {
-            zInfo("giterr");
-            return rm;
-        }
-        else
-        {
-            auto fileInfo = FileSystemModelHelper::fileInfo(m.fileindex);
-            rm.giturl=GitHelper::GetRepoURL(fileInfo);
+//        if(!isok_rm || !isok_commit || !isok_push)
+//        {
+//            zInfo("giterr");
+//            return rm;
+//        }
+//        else
+            if(isok)
+            {
+                auto fileInfo = FileSystemModelHelper::fileInfo(m.fileindex);
+                rm.giturl=GitHelper::GetRepoURL(fileInfo);
+            }
         }
     }
 
@@ -250,14 +282,16 @@ void GitNote::AddNewNote(AddNoteModel m){
     auto is_gitrepo = GitHelper::isGitRepo(fi2);
 
     if(is_gitrepo){
+        QString e;
         auto fp = FileSystemModelHelper::filePath(pix);
         auto isok_add = GitHelper::Add(fp, newfile);
-        auto isok_commit = GitHelper::Commit(fp, newfile, FN);
-        auto isok_push = GitHelper::Push(fp, nullptr);
 
-        if(!isok_add || !isok_commit || !isok_push)
-        {
-            zInfo("giterr");
+        //auto isok_commit = GitHelper::Commit(fp, newfile, FN, &e);
+        //auto isok_push = GitHelper::Push(fp, &e);
+
+        //if(!isok_add || !isok_commit || !isok_push)
+        if(isok_add){
+            isok = GitHelper::Refresh(fp, FN, GitHelper::Type::Push);
         }
     }
 }
@@ -293,15 +327,21 @@ void GitNote::Delete(DeleteModel m){
     //auto fn = fi2.fileName();
     if(is_gitrepo)
     {
+        QString e;
         auto fp = FileSystemModelHelper::filePath(pix);
         auto isok_rm = GitHelper::Rm(fp, fn);
-        auto isok_commit = GitHelper::Commit(fp, QString(), FN);
-        auto isok_push = GitHelper::Push(fp, nullptr);
 
-        if(!isok_rm || !isok_commit || !isok_push)
+        if(isok_rm)
         {
-            zInfo("giterr");
+            bool isok = GitHelper::Refresh(fp, FN, GitHelper::Type::Push);
         }
+//        auto isok_commit = GitHelper::Commit(fp, QString(), FN, &e);
+//        auto isok_push = GitHelper::Push(fp, &e);
+
+//        if(!isok_rm || !isok_commit || !isok_push)
+//        {
+//            zInfo("giterr");
+//        }
     }
     // TODO git delete
 

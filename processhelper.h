@@ -20,7 +20,7 @@ public:
 
     //static QString Execute(const QString& cmd);
     static QString Execute(const QStringList &cmds);
-    static Output Execute(const QString &cmd,QObject *parent);
+    static Output Execute(const QString &cmd);
 };
 
 #endif // PROCESSHELPER_H

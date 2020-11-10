@@ -57,7 +57,7 @@ public:
 
    static GitNote::InfoModelR Info(const InfoModel& m);
 
-   static GitNote::SaveModelR Save(const SaveModel& m, QObject *parent);
+   static GitNote::SaveModelR Save(const SaveModel& m);
 
    static void SettingsProcess();   
 

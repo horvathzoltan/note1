@@ -10,15 +10,18 @@
 class GitHelper
 {
 public:
+    enum Type:bool{Push=false,Pull=true};
     static QString GetRepoURL(const QFileInfo&);
     static bool isGitRepo(const QFileInfo& fileInfo);
     static bool isTracked(const QFileInfo& fileInfo);
     static bool clone(const QString &path, const QString &url, const QString &user, const QString &passwd);
     static QString GetToplevel(const QFileInfo &fileInfo);
-    static bool Commit(const QString &fp, const QString &fn, const QString& desc);
+    static bool Commit(const QString &fp, const QString &fn, const QString& desc, QString *s);
     static bool Add(const QString &fp, const QString &fn);
     static bool Rm(const QString &fp, const QString &fn);
-    static bool Push(const QString &fp, QObject *parent);
+    //static bool Push(const QString &fp,  QString *s);
+    //static bool Fetch(const QString &fp, QString *s);
+    static bool Refresh(const QString &repo_path, const QString& comment, Type t);
 };
 
 #endif // GITHELPER_H

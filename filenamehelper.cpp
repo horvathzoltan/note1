@@ -37,7 +37,7 @@ QString FilenameHelper::user()
     if (!l.isEmpty()) return l;
 #ifdef Q_OS_UNIX
     auto cmd = "whoami";
-    auto r = ProcessHelper::Execute(cmd, nullptr);
+    auto r = ProcessHelper::Execute(cmd);
     if(!r.stdErr.isEmpty()) return QString();
     l = r.stdOut.trimmed();
 #endif

@@ -17,7 +17,7 @@ QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
     auto cmd = QStringLiteral(R"(git -C "%1" rev-parse --show-toplevel)").arg(fileparent);
     //auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
 
-    auto out = ProcessHelper::Execute(cmd, nullptr);
+    auto out = ProcessHelper::Execute(cmd);
     if(out.exitCode!=0) return QString();
     if(out.stdOut.isEmpty()) return QString();
     return com::helper::StringHelper::GetFirstRow(out.stdOut);
@@ -33,9 +33,10 @@ bool GitHelper::isTracked(const QFileInfo& fileInfo){
     auto fileparent = (fileInfo.isDir())?fileInfo.absoluteFilePath():fileInfo.absolutePath();
 
     auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
-    auto out = ProcessHelper::Execute(cmd, nullptr);
-    if(out.exitCode!=0) return false;
-    return true;
+    auto out = ProcessHelper::Execute(cmd);
+    if(!out.exitCode) return true;
+    zError2(out.ToString(),2);
+    return false;
 }
 
 // git add work1.h
@@ -43,61 +44,129 @@ bool GitHelper::Add(const QString &fp, const QString &fn)
 {
     //QString comment = "add_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" add "%2")").arg(fp).arg(fn);
-    auto out = ProcessHelper::Execute(cmd, nullptr);
-    if(out.exitCode!=0) return false;
-    if(!out.stdErr.isEmpty()) return false;
-    return true;
+    auto out = ProcessHelper::Execute(cmd);
+    if(!out.exitCode) return true;
+    zError2(out.ToString(),2);
+    //if(!out.stdErr.isEmpty()) return false;
+    return false;
 }
 
 bool GitHelper::Rm(const QString &fp, const QString &fn)
 {
     //QString comment = "add_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
     auto cmd = QStringLiteral(R"(git -C "%1" rm "%2")").arg(fp).arg(fn);
-    auto out = ProcessHelper::Execute(cmd, nullptr);
-    if(out.exitCode!=0) return false;
-    if(!out.stdErr.isEmpty()) return false;
-    return true;
+    auto out = ProcessHelper::Execute(cmd);
+    if(!out.exitCode) return true;
+    zError2(out.ToString(),2);
+    //if(!out.stdErr.isEmpty()) return false;
+    return false;
 }
 
 // git commit work1.h -m "valami2"
-bool GitHelper::Commit(const QString &fp, const QString &fn, const QString& desc)
+bool GitHelper::Commit(const QString &repo_path, const QString &file_name, const QString& desc, QString *err)
 {    
     QString comment = desc+"_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
-    auto cmd = QStringLiteral(R"(git -C "%1" commit -m "%2")").arg(fp).arg(comment);
-    if(!fn.isEmpty()) cmd+= QStringLiteral(R"( -o "%1")").arg(fn);
-    auto out = ProcessHelper::Execute(cmd, nullptr);
-    if(out.exitCode!=0) return false;
-    if(!out.stdErr.isEmpty()) return false;
-    return true;
+    auto cmd = QStringLiteral(R"(git -C "%1" commit -a -m "%2")").arg(repo_path).arg(comment);
+    if(!file_name.isEmpty()) cmd+= QStringLiteral(R"( -o "%1")").arg(file_name);
+    auto out = ProcessHelper::Execute(cmd);
+    if(!out.exitCode) return true;
+    if(out.stdOut.contains("Your branch is up to date")) return true;//1:Your branch is up to date
+
+    //if(out.stdErr.isEmpty()) return true;
+    //if(err) *err = out.ToString();
+    zError2(out.ToString(),2);
+    return false;
 }
 
-// git push
-bool GitHelper::Push(const QString &fp, QObject *parent)
+/*
+git commit -a -m "b" // ha push akkor kell
+git fetch
+git merge
+git mergetool // ha nincs conflict nem kell
+git commit -a -m "ab"
+git push // ha push akkor kell
+*/
+
+//Your branch is up to date
+
+bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type type)
 {
+    bool isok;
+    if(type == Push){ // push akko rkell commitolni - pullnál nincs változás
+        QString err;
+        isok = Commit(repo_path, QString(), comment, &err);
 
-//    auto cmd = QStringLiteral( R"(git -C "%1" push)").arg(fp);
-//    auto out = ProcessHelper::Execute(cmd);
-//    if(out.exitCode!=0) return false;
-
-    auto cmd = QStringLiteral(R"(git -C "%1" fetch)").arg(fp);
-    auto out = ProcessHelper::Execute(cmd, nullptr);
-    if(out.exitCode!=0) return false;
-
-    cmd = QStringLiteral(R"(git -C "%1" merge)").arg(fp);
-    out = ProcessHelper::Execute(cmd, nullptr);
-    if(out.exitCode!=0 || out.stdOut.contains("CONFLICT")){
-        cmd = QStringLiteral(R"(git -C "%1" mergetool)").arg(fp);
-        out = ProcessHelper::Execute(cmd, parent);
-    }
-    else{
-        cmd = QStringLiteral( R"(git -C "%1" push)").arg(fp);
-        out = ProcessHelper::Execute(cmd, nullptr);
-        if(out.exitCode!=0) return false;
+        if(!isok){
+            zError2(err,2);
+            return false;
+        }
     }
 
-    //if(!out.stdErr.isEmpty()) return false;
+    auto cmd = QStringLiteral(R"(git -C "%1" fetch)").arg(repo_path);
+    auto out = ProcessHelper::Execute(cmd);
+    if(out.exitCode){
+        zError2(out.ToString(),2);
+        return false;
+    }
+
+    cmd = QStringLiteral(R"(git -C "%1" merge)").arg(repo_path);
+    out = ProcessHelper::Execute(cmd);
+
+    bool isChanged = false;
+
+    if(out.exitCode) //1:Conflict 1:Aborting
+    {
+        if(out.stdOut.contains("CONFLICT"))
+        {
+            cmd = QStringLiteral(R"(git -C "%1" mergetool)").arg(repo_path);
+            out = ProcessHelper::Execute(cmd);
+            if(out.exitCode)
+            {
+                zError2(out.ToString(),2);
+                return false;
+            }
+            else // változott, sikeres merge
+            {
+                isChanged = true;
+            }
+        }
+        else// egyéb hiba van
+        {
+            zError2(out.ToString(),2);
+            return false;
+        }
+    }
+    else // 0:Already up to date. //0:1 file changed
+    {
+        if(!out.stdOut.contains("Already up to date.")) // valami változás volt
+        {
+            isChanged = true;
+        }
+
+    }
+
+    if(isChanged) // ha változott
+    {
+        QString err;
+        isok = Commit(repo_path, QString(), "merge-"+comment, &err);
+        if(!isok){
+            zError2(err,2);
+            return false;
+        }
+    }
+
+    if(type == Push){ // ha push fel is küldjük
+        auto cmd = QStringLiteral( R"(git -C "%1" push)").arg(repo_path);
+        auto out = ProcessHelper::Execute(cmd);
+        if(out.exitCode){
+            zError2(out.ToString(),2);
+            return false;
+        }
+    }
+
     return true;
 }
+
 /*
  * //git ls-tree --full-tree --name-only -r HEAD
 //git ls-files --error-unmatch common.pri
@@ -128,7 +197,7 @@ QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
     if(!fileInfo.isDir())
     {
         auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath);
-        out = ProcessHelper::Execute(cmd, nullptr);
+        out = ProcessHelper::Execute(cmd);
         if(out.exitCode!=0) return filepath;
         if(out.stdOut.isEmpty()) return filepath;
         file = filepath.mid(rootpath.length()+1);
@@ -136,14 +205,14 @@ QString GitHelper::GetRepoURL(const QFileInfo& fileInfo)
     else
     {
         auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(rootpath).arg(filepath);
-        out = ProcessHelper::Execute(cmd, nullptr);
+        out = ProcessHelper::Execute(cmd);
         if(out.exitCode!=0) return filepath;
         if(out.stdOut.isEmpty()) return filepath;
         file = filepath.mid(rootpath.length()+1);
     }
 
     auto cmd= QStringLiteral(R"(git -C "%1" remote -v)").arg(rootpath);
-    out = ProcessHelper::Execute(cmd, nullptr);
+    out = ProcessHelper::Execute(cmd);
     if(out.exitCode==0){
         auto bl= com::helper::StringHelper::toStringList(out.stdOut);
         static QRegularExpression r1(com::helper::StringHelper::join({'\t', ' '}, '|'));
@@ -177,7 +246,7 @@ bool GitHelper::clone(const QString& path, const QString& url, const QString& us
     static auto commandTmp = QStringLiteral(R"(git -C %1 clone %2)");
     auto command = commandTmp.arg(path).arg(url);
     //zInfo(command);
-    auto out = ProcessHelper::Execute(command, nullptr);
+    auto out = ProcessHelper::Execute(command);
     return false;
 
 }

@@ -67,6 +67,9 @@ bool FileSystemModelHelper::Save(const QString& fn, const QString& txt)
         e += QStringLiteral(" As: %1").arg(fn);
 
     zInfo(e);
+    //zInfo2(e,1);
+    LocInfo l("a", "b", 4);
+    Log::info2("aaa", l);
     return isSaved;
 }
 

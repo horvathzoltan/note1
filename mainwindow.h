@@ -33,7 +33,7 @@ public:
 
     const QModelIndex focusedIndex() const;
 
-    static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui);
+    static void msg(Errlevels::Levels errlevel, const QString &msg, const QString &loci, const QString &st, void *ui, int flag);
 
     QString DisplayNewDirDialog(const QString &title);
 
