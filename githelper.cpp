@@ -112,7 +112,7 @@ bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type t
     cmd = QStringLiteral(R"(git -C "%1" merge)").arg(repo_path);
     out = ProcessHelper::Execute(cmd);
 
-    bool isChanged = false;
+   // bool isChanged = false;
 
     if(out.exitCode) //1:Conflict 1:Aborting
     {
@@ -125,9 +125,15 @@ bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type t
                 zError2(out.ToString(),2);
                 return false;
             }
-            else // változott, sikeres merge
+            else // változott, sikeres merge, de az eredeti megszakadt
             {
-                isChanged = true;
+                cmd = QStringLiteral(R"(git -C "%1" -c core.editor=true merge --continue)").arg(repo_path);
+                out = ProcessHelper::Execute(cmd);
+                if(out.exitCode)
+                {
+                    zError2(out.ToString(),2);
+                    return false;
+                }
             }
         }
         else// egyéb hiba van
@@ -136,24 +142,26 @@ bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type t
             return false;
         }
     }
-    else // 0:Already up to date. //0:1 file changed
-    {
-        if(!out.stdOut.contains("Already up to date.")) // valami változás volt
-        {
-            isChanged = true;
-        }
+//    else // 0:Already up to date. //0:1 file changed
+//    {
+//        if(!out.stdOut.contains("Already up to date.")) // valami változás volt
+//        {
+//            isChanged = true;
+//        }
 
-    }
+//    }
 
-    if(isChanged) // ha változott
-    {
-        QString err;
-        isok = Commit(repo_path, QString(), "merge-"+comment, &err);
-        if(!isok){
-            zError2(err,2);
-            return false;
-        }
-    }
+//    if(isChanged) // ha változott
+//    {
+//        cmd = QStringLiteral(R"(git -C "%1" -c core.editor=true merge --continue)").arg(repo_path);
+//        out = ProcessHelper::Execute(cmd);
+////        QString err;
+////        isok = Commit(repo_path, QString(), "merge-"+comment, &err);
+////        if(!isok){
+////            zError2(err,2);
+////            return false;
+////        }
+//    }
 
     if(type == Push){ // ha push fel is küldjük
         auto cmd = QStringLiteral( R"(git -C "%1" push)").arg(repo_path);
