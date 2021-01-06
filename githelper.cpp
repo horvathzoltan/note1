@@ -28,14 +28,14 @@ bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
     return GitHelper::GetRepoURL(fileInfo).startsWith('g');
 }
 
-bool GitHelper::isTracked(const QFileInfo& fileInfo){
+auto GitHelper::isTracked(const QFileInfo& fileInfo) -> bool{
     auto fn = fileInfo.fileName();
     auto fileparent = (fileInfo.isDir())?fileInfo.absoluteFilePath():fileInfo.absolutePath();
 
     auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
     auto out = ProcessHelper::Execute(cmd);
     if(!out.exitCode) return true;
-    zError2(out.ToString(),2);
+    //zError2(out.ToString(),2);
     return false;
 }
 

@@ -21,7 +21,8 @@ GitNote::InfoModelR GitNote::Info(const GitNote::InfoModel &m)
 }
 
 // az aktuálisat menti, a megadott néven, nem a megadott fájlt!
-// TODO miért de visszanyitja?
+// majd pedig megnyitja az aktuálisat
+// ha git-követett, akkor fetcheli
 GitNote::SaveModelR GitNote::Save(const SaveModel& m)
 {
     static const QString FN = "Update";
@@ -76,18 +77,12 @@ GitNote::TextFileModel GitNote::Open(const QModelIndex& index)
 //    auto ix = FileSystemModelHelper::Index();
     auto pix = FileSystemModelHelper::parent(index);
     auto fp = FileSystemModelHelper::filePath(pix);
-
-    static const QString FN = "Fetch";
-
-//    QString e;
-//    bool is_comm_ok = GitHelper::Fetch(fp, &e);
-//    if(!is_comm_ok)
-//    {
-//        zError2("fetch err\n\n"+e, 2);
-//        //goto end;
-//    }
-    GitHelper::Refresh(fp, FN, GitHelper::Pull);
-
+    auto fi = FileSystemModelHelper::fileInfo(index);
+    if(GitHelper::isTracked(fi))
+    {
+        static const QString FN = "Fetch";
+        GitHelper::Refresh(fp, FN, GitHelper::Pull);
+    }
     auto txt2 = FileSystemModelHelper::Load(index);
     return {filename, txt2};
 }
