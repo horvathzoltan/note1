@@ -26,31 +26,33 @@ GitNote::InfoModelR GitNote::Info(const GitNote::InfoModel &m)
 GitNote::SaveModelR GitNote::Save(const SaveModel& m)
 {
     static const QString FN = "Update";
+    auto ix = FileSystemModelHelper::Index();
+    auto old_name = FileSystemModelHelper::fileName(ix);
     bool isSaved = FileSystemModelHelper::Save(m.txtfile.name, m.txtfile.txt);
-    if(isSaved)
+    auto fi = FileSystemModelHelper::fileInfo(ix);
+    auto isTracked = GitHelper::isTracked(fi);
+    auto isRename = old_name!=m.txtfile.name;
+    auto pix = FileSystemModelHelper::parent(ix);
+    auto repo_path = FileSystemModelHelper::filePath(pix);
+    bool isrefresh = false;
+    if(isSaved && isTracked)
     {
-        auto ix = FileSystemModelHelper::Index();
-        auto fi = FileSystemModelHelper::fileInfo(ix);
-        if(GitHelper::isTracked(fi))
+        isrefresh=true;
+        //GitHelper::Refresh(repo_path, FN, GitHelper::Push);
+    }
+    if(isRename)
+    {
+        if(isTracked)
         {
-            auto pix = FileSystemModelHelper::parent(ix);
-            auto fp = FileSystemModelHelper::filePath(pix);
-
-//            QString e;
-//            bool is_comm_ok = GitHelper::Commit(fp, m.txtfile.name, FN, &e);
-//            if(!is_comm_ok)
-//            {
-//                zError2("commit err\n\n"+e, 2);
-//                goto end;
-//            }
-            //bool is_push_ok = GitHelper::Push(fp, &e);
-            bool is_push_ok = GitHelper::Refresh(fp, FN, GitHelper::Push);
-//            if(!is_comm_ok || !is_push_ok)
-//            {
-//                zError2("push err\n\n"+e, 2);
-//            }
+            GitHelper::Rename(repo_path, old_name, m.txtfile.name);
+            isrefresh=true;
+        }
+        else
+        {
+            FileSystemModelHelper::Rename(ix, m.txtfile.name);
         }
     }
+    if(isrefresh) GitHelper::Refresh(repo_path, FN, GitHelper::Push);
     end:
     if(m.type==Timer || m.type==Close) return {};
     auto mr = GitNote::Open(m.index);
@@ -338,7 +340,6 @@ void GitNote::Delete(DeleteModel m){
 //            zInfo("giterr");
 //        }
     }
-    // TODO git delete
 
     if(FileSystemModelHelper::isDir(m.fileindex))
     {
@@ -351,9 +352,7 @@ void GitNote::Delete(DeleteModel m){
             zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
     }
 
-
-
-
+    //FileSystemModelHelper::
     /*
 git rm file1.txt
 git commit -m "remove file1.txt"

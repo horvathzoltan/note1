@@ -62,6 +62,17 @@ bool GitHelper::Rm(const QString &fp, const QString &fn)
     return false;
 }
 
+bool GitHelper::Rename(const QString &fp, const QString &fn1, const QString &fn2)
+{
+    //QString comment = "add_"+environment.user_at_host+'_'+QDateTime::currentDateTimeUtc().toString();
+    auto cmd = QStringLiteral(R"(git -C "%1" mv "%2" "%3")").arg(fp).arg(fn1).arg(fn2);
+    auto out = ProcessHelper::Execute(cmd);
+    if(!out.exitCode) return true;
+    zError2(out.ToString(),2);
+    //if(!out.stdErr.isEmpty()) return false;
+    return false;
+}
+
 // git commit work1.h -m "valami2"
 bool GitHelper::Commit(const QString &repo_path, const QString &file_name, const QString& desc, QString *err)
 {    

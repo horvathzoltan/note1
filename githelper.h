@@ -22,6 +22,7 @@ public:
     //static bool Push(const QString &fp,  QString *s);
     //static bool Fetch(const QString &fp, QString *s);
     static bool Refresh(const QString &repo_path, const QString& comment, Type t);
+    static bool Rename(const QString &fp, const QString &fn1, const QString &fn2);
 };
 
 #endif // GITHELPER_H

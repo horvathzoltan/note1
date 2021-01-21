@@ -50,7 +50,6 @@ bool FileSystemModelHelper::Rename(const QModelIndex &index, const QString& fn){
 
 // ha a txt változatlan, le kell menteni az aktuálisat
 // ha a neve megváltozott, át kell nevezni a modellben
-// TODO ha követett, át kell nevezni a gitben is
 bool FileSystemModelHelper::Save(const QString& fn, const QString& txt)
 {
     if(!_model_index.isValid()) return false;
@@ -68,10 +67,10 @@ bool FileSystemModelHelper::Save(const QString& fn, const QString& txt)
     {
         e = QStringLiteral("Unchanged: %1").arg(filepath);
     }
-    if(Rename(_model_index, fn))
-    {
-        e += QStringLiteral(" As: %1").arg(fn);
-    }
+//    if(Rename(_model_index, fn))
+//    {
+//        e += QStringLiteral(" As: %1").arg(fn);
+//    }
 
     zInfo(e);
     //zInfo2(e,1);

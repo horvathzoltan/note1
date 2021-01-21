@@ -165,12 +165,21 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::on_addDirButton_clicked()
 {
+    ui->addDirButton->setDisabled(true);
+    QCoreApplication::processEvents();
     GitNote::AddDir({this, focusedIndex()});
+    ui->addDirButton->setDisabled(false);
 }
 
 void MainWindow::on_deleteButton_clicked()
 {
+    ui->deleteButton->setDisabled(true);
+    QCoreApplication::processEvents();
+
     GitNote::Delete({focusedIndex()});
+    ui->fileTreeView->clearSelection();
+
+    ui->deleteButton->setDisabled(false);
 }
 
 
@@ -181,8 +190,10 @@ void MainWindow::on_deleteButton_clicked()
 //NewNote
 void MainWindow::on_addNoteButton_clicked()
 {
-    //TODO kell-e megnyitni az újat?????
+    ui->addNoteButton->setDisabled(true);
+    QCoreApplication::processEvents();
     GitNote::AddNewNote({this,focusedIndex()});
+    ui->addNoteButton->setDisabled(false);
 }
 
 void MainWindow::on_SettingsButton_clicked()
@@ -199,7 +210,7 @@ void MainWindow::setUi(GitNote::SettingsModelR m)
 //AddToRepo
 void MainWindow::on_addToRepoButton_clicked()
 {
-    //TODO letiltjuk a gombot...
+    //ui->addToRepoButton->setDisabled(true);
 
     GitNote::AddNoteModel m{this,focusedIndex()};
     ui->addToRepoButton->setDisabled(true);
@@ -207,6 +218,7 @@ void MainWindow::on_addToRepoButton_clicked()
 
     //auto t = FileSystemModelHelper::isDir(a.index);
     setUi(a);
+   // ui->addToRepoButton->setEnabled(true);
 }
 
 void MainWindow::setUi(GitNote::AddNoteModelR m)
