@@ -340,18 +340,20 @@ void GitNote::Delete(DeleteModel m){
 //            zInfo("giterr");
 //        }
     }
-
-    if(FileSystemModelHelper::isDir(m.fileindex))
-    {
-        if(!FileSystemModelHelper::Rmdir(m.fileindex))
-            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
-    }
     else
     {
-        if(!FileSystemModelHelper::Remove(m.fileindex))
-            zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
+        if(FileSystemModelHelper::isDir(m.fileindex))
+        {
+            // TODO ha a dir nem üres, nem kell erőltetni
+            if(!FileSystemModelHelper::Rmdir(m.fileindex))
+                zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
+        }
+        else
+        {
+            if(!FileSystemModelHelper::Remove(m.fileindex))
+                zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::FILE).arg(fn))
+        }
     }
-
     //FileSystemModelHelper::
     /*
 git rm file1.txt

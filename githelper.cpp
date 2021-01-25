@@ -24,8 +24,9 @@ QString GitHelper::GetToplevel(const QFileInfo& fileInfo)
 }
 
 bool GitHelper::isGitRepo(const QFileInfo& fileInfo){
-    //return !GitHelper::GetToplevel(fileInfo).isEmpty();
-    return GitHelper::GetRepoURL(fileInfo).startsWith('g');
+    return !GitHelper::GetToplevel(fileInfo).isEmpty();
+    //return GitHelper::GetRepoURL(fileInfo).startsWith('g');
+    //return GitHelper::GetRepoURL(fileInfo);
 }
 
 auto GitHelper::isTracked(const QFileInfo& fileInfo) -> bool{
@@ -100,14 +101,14 @@ git push // ha push akkor kell
 
 //Your branch is up to date
 
-bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type type)
+auto GitHelper::Refresh(const QString &repo_path, const QString& comment, Type type) ->bool
 {
     bool isok;
     if(type == Push){ // push akko rkell commitolni - pullnál nincs változás
         QString err;
         isok = Commit(repo_path, QString(), comment, &err);
 
-        if(!isok){
+        if(!isok){            
             zError2(err,2);
             return false;
         }
@@ -127,7 +128,7 @@ bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type t
 
     if(out.exitCode) //1:Conflict 1:Aborting
     {
-        if(out.stdOut.contains("CONFLICT"))
+        if(out.stdOut.contains(QStringLiteral("CONFLICT")))
         {
             cmd = QStringLiteral(R"(git -C "%1" mergetool)").arg(repo_path);
             out = ProcessHelper::Execute(cmd);
@@ -136,8 +137,8 @@ bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type t
                 zError2(out.ToString(),2);
                 return false;
             }
-            else // változott, sikeres merge, de az eredeti megszakadt
-            {
+            //else // változott, sikeres merge, de az eredeti megszakadt
+            //{
                 cmd = QStringLiteral(R"(git -C "%1" -c core.editor=true merge --continue)").arg(repo_path);
                 out = ProcessHelper::Execute(cmd);
                 if(out.exitCode)
@@ -145,10 +146,12 @@ bool GitHelper::Refresh(const QString &repo_path, const QString& comment, Type t
                     zError2(out.ToString(),2);
                     return false;
                 }
-            }
+            //}
         }
+        else if(out.stdErr.endsWith("not something we can merge\n")) {}
         else// egyéb hiba van
         {
+
             zError2(out.ToString(),2);
             return false;
         }
