@@ -2,6 +2,7 @@
 
 #include "common/logger/log.h"
 #include "common/helper/settings/settingshelper.h"
+#include "common/helper/file/filehelper.h"
 #include "filesystemmodelhelper.h"
 #include "settings.h"
 #include "filenamehelper.h"
@@ -317,8 +318,8 @@ void GitNote::Delete(DeleteModel m){
 
     //auto newname = FileSystemModelHelper::filePath(newix);
     auto pix = FileSystemModelHelper::parent(m.fileindex); // szülő mappa
-    auto fi2 = FileSystemModelHelper::fileInfo(pix);
-    auto is_gitrepo = GitHelper::isGitRepo(fi2);
+    auto pfi2 = FileSystemModelHelper::fileInfo(pix);
+    auto is_gitrepo = GitHelper::isGitRepo(pfi2);
     auto fn = FileSystemModelHelper::fileName(m.fileindex);
 
     //auto fn = fi2.fileName();
@@ -344,9 +345,16 @@ void GitNote::Delete(DeleteModel m){
     {
         if(FileSystemModelHelper::isDir(m.fileindex))
         {
-            // TODO ha a dir nem üres, nem kell erőltetni
-            if(!FileSystemModelHelper::Rmdir(m.fileindex))
-                zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
+            auto fi = FileSystemModelHelper::fileInfo(m.fileindex);
+            bool isempty = com::helper::FileHelper::isEmpty(fi);
+
+            if(isempty)
+            {
+                if(!FileSystemModelHelper::Rmdir(m.fileindex)) //// TODO ha a dir nem üres, nem kell erőltetni
+                    zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
+            }
+            else
+                zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg("not empty"))
         }
         else
         {
