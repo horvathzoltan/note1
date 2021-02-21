@@ -32,7 +32,7 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
     bool isSaved = FileSystemModelHelper::Save(m.txtfile.name, m.txtfile.txt);
     auto fi = FileSystemModelHelper::fileInfo(ix);
     auto isTracked = GitHelper::isTracked(fi);
-    auto isRename = old_name!=m.txtfile.name;
+    auto isRename = !(m.txtfile.name.isEmpty())&&(old_name!=m.txtfile.name);
     auto pix = FileSystemModelHelper::parent(ix);
     auto repo_path = FileSystemModelHelper::filePath(pix);
     bool isrefresh = false;
@@ -54,12 +54,23 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
         }
     }
     if(isrefresh) GitHelper::Refresh(repo_path, FN, GitHelper::Push);
-    end:
+    //end:
     if(m.type==Timer || m.type==Close) return {};
     auto mr = GitNote::Open(m.index);
     return {mr, m.index, m.type};
 }
 
+auto GitNote::DirRefresh(const GitNote::DirRefreshModel& m) -> GitNote::DirRefreshModelR
+{
+    static const QString FN = QStringLiteral("Pull");
+
+    auto fi = FileSystemModelHelper::fileInfo(m.index);
+    auto top = GitHelper::GetToplevel(fi);
+    if(top.isEmpty()) return {};
+    auto repo_path = FileSystemModelHelper::filePath(m.index);
+    GitHelper::Refresh(repo_path, FN, GitHelper::Pull);
+    return {};
+}
 ///
 /// \brief megnyitja indexet
 ///
@@ -69,7 +80,7 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
 /// -ha nincsen megnyitva
 ///
 
-GitNote::TextFileModel GitNote::Open(const QModelIndex& index)
+auto GitNote::Open(const QModelIndex& index) -> GitNote::TextFileModel
 {
     if(!index.isValid()) return {};
     if(FileSystemModelHelper::isDir(index)) return{};
@@ -350,7 +361,7 @@ void GitNote::Delete(DeleteModel m){
 
             if(isempty)
             {
-                if(!FileSystemModelHelper::Rmdir(m.fileindex)) //// TODO ha a dir nem üres, nem kell erőltetni
+                if(!FileSystemModelHelper::Rmdir(m.fileindex))
                     zInfo(GitNote::MSG_FAILEDTO.arg(GitNote::DELETE).arg(GitNote::DIR).arg(fn))
             }
             else

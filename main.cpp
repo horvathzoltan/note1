@@ -15,13 +15,18 @@ Settings settings;
 Environment environment;
 
 int main(int argc, char *argv[])
-{
+{    
     QApplication a(argc, argv);
+    /*
+     * Note: The use of Q_INIT_RESOURCE() and Q_CLEANUP_RESOURCE() is not necessary when the resource is built as part of the application.
+    */
+    //Q_INIT_RESOURCE(note1);
+
     auto fn = FilenameHelper::GetIni();
     com::helper::SettingsHelper::init(fn, &settings);
     com::helper::SettingsHelper::loadSettings();
 
-    QFileSystemModel* fm = new QFileSystemModel();
+    auto* fm = new QFileSystemModel();
 
     FileSystemModelHelper::init(fm);
 
@@ -39,7 +44,7 @@ int main(int argc, char *argv[])
     Log::init(MainWindow::msg, false, &w, false);
     w.show();    
 
-    auto r = a.exec();
+    auto r = QApplication::exec();
     com::helper::SettingsHelper::saveSettings();
 
     delete fm;

@@ -102,7 +102,16 @@ public:
        const QModelIndex& index;
    };
    static AddNoteModelR AddNote(AddNoteModel m);
-private:    
+
+   struct DirRefreshModel{
+       const QModelIndex& index;
+
+   };
+
+   struct DirRefreshModelR{};
+
+   static DirRefreshModelR DirRefresh(const GitNote::DirRefreshModel&);
+   private:
     static TextFileModel Open(const QModelIndex& index);
     static CloneDialog::Model DisplayCloneDialog(QMainWindow *w, const QString& title);
     static NewFileDialog::Model DisplayNewDirDialog(QMainWindow *w, const QString& title);

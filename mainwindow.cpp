@@ -81,7 +81,7 @@ void MainWindow::msg(Errlevels::Levels errlevel, const QString &msg, const QStri
 
 const QModelIndex MainWindow::NullIndex = QModelIndex();
 
-const QModelIndex MainWindow::focusedIndex() const{
+auto MainWindow::focusedIndex() const -> const QModelIndex{
     auto indexes = ui->fileTreeView->selectionModel()->selectedIndexes();
     if (indexes.isEmpty()) return NullIndex;
     return indexes.first();
@@ -96,7 +96,9 @@ void MainWindow::updateFileTreeView()
     ui->fileTreeView->setRootIndex(ix);
 
     for (int i = 1; i < FileSystemModelHelper::columnCount(); ++i)
-            ui->fileTreeView->hideColumn(i);
+    {
+        ui->fileTreeView->hideColumn(i);
+    }
 }
 
 //singleclick
@@ -312,4 +314,9 @@ void MainWindow::UpdateActionButtonState(const QModelIndex &index){
 void MainWindow::setActionButtonState(bool x){
     ui->EditButton->setEnabled(x);
     //ui->deleteButton->setEnabled(x);
+}
+
+void MainWindow::on_fileTreeView_expanded(const QModelIndex &index)
+{
+     GitNote::DirRefresh({index});
 }

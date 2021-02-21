@@ -69,6 +69,8 @@ private slots:
     void on_addToRepoButton_clicked();
     void on_cloneButton_clicked();
 
+    void on_fileTreeView_expanded(const QModelIndex &index);
+
 private:
     void on_autosave_timer_timeout();
     Ui::MainWindow *ui;

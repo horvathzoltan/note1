@@ -35,9 +35,7 @@ auto GitHelper::isTracked(const QFileInfo& fileInfo) -> bool{
 
     auto cmd = QStringLiteral(R"(git -C "%1" ls-files --error-unmatch "%2")").arg(fileparent).arg(fn);
     auto out = ProcessHelper::Execute(cmd);
-    if(!out.exitCode) return true;
-    //zError2(out.ToString(),2);
-    return false;
+    return !out.exitCode;
 }
 
 // git add work1.h
