@@ -270,7 +270,7 @@ void MainWindow::updateGitActionButtonState(const QString &giturl, const QModelI
 void MainWindow::setUi(GitNote::InfoModelR m){
     UpdateActionButtonState(m.index);
     updateGitActionButtonState(m.giturl, m.index);
-    ui->repolabel->setText(m.giturl);
+    ui->repolabel->setText(m.giturl);    
 }
 
 void MainWindow::setUi(GitNote::SaveModelR m)
@@ -281,6 +281,7 @@ void MainWindow::setUi(GitNote::SaveModelR m)
     ui->filenameEdit->setText(m.txtfile.name);
     UpdateEditorState();
     if(m.type==GitNote::EditButton) UpdateActionButtonState(m.index);
+
 }
 
 
@@ -319,4 +320,11 @@ void MainWindow::setActionButtonState(bool x){
 void MainWindow::on_fileTreeView_expanded(const QModelIndex &index)
 {
      GitNote::DirRefresh({index});
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    on_autosave_timer_timeout();
+    auto ix = FileSystemModelHelper::Index();
+    ui->fileTreeView->selectionModel()->select(ix, QItemSelectionModel::Select);
 }

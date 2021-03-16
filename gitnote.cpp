@@ -28,6 +28,7 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
 {
     static const QString FN = "Update";
     auto ix = FileSystemModelHelper::Index();
+    if(!ix.isValid()) return {};
     auto old_name = FileSystemModelHelper::fileName(ix);
     bool isSaved = FileSystemModelHelper::Save(m.txtfile.name, m.txtfile.txt);
     auto fi = FileSystemModelHelper::fileInfo(ix);
@@ -41,8 +42,12 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
         isrefresh=true;
         //GitHelper::Refresh(repo_path, FN, GitHelper::Push);
     }
+    //QModelIndex inx2;
+
     if(isRename)
     {
+        //auto fp1 = QDir(fi.absolutePath()).filePath(m.txtfile.name);
+
         if(isTracked)
         {
             GitHelper::Rename(repo_path, old_name, m.txtfile.name);
@@ -52,10 +57,13 @@ GitNote::SaveModelR GitNote::Save(const SaveModel& m)
         {
             FileSystemModelHelper::Rename(ix, m.txtfile.name);
         }
+
+        //inx2 = FileSystemModelHelper::Index(fp1);
     }
     if(isrefresh) GitHelper::Refresh(repo_path, FN, GitHelper::Push);
     //end:
     if(m.type==Timer || m.type==Close) return {};
+    //auto ix2 = FileSystemModelHelper::Model()->index(m.txtfile.name);
     auto mr = GitNote::Open(m.index);
     return {mr, m.index, m.type};
 }

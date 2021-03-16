@@ -45,18 +45,24 @@ bool FileSystemModelHelper::Rename(const QModelIndex &index, const QString& fn){
     auto newfile = _model->fileInfo(index).absoluteDir().filePath(fn);
     if(QFile::exists(newfile)) return false;
     QFile f(_model->filePath(index));
-    return f.rename(newfile);
+    auto a =  f.rename(newfile);
+    _model_index = _model->index(newfile);
+    _model->setData(index, fn);
+    return a;
 }
 
 // ha a txt változatlan, le kell menteni az aktuálisat
 // ha a neve megváltozott, át kell nevezni a modellben
 bool FileSystemModelHelper::Save(const QString& fn, const QString& txt)
 {
+
+    if(!_model) return false;
     if(!_model_index.isValid()) return false;
     if(fn.isEmpty()) return false;
 
     QString e;
     auto filepath = _model->filePath(_model_index);
+    if(filepath.isEmpty()) return false;
     auto isSaved = Save(_model_index, txt);
 
     if(isSaved)
@@ -131,6 +137,7 @@ QString FileSystemModelHelper::filePath(const QModelIndex &ix){
 
 
 QString FileSystemModelHelper::fileName(const QModelIndex &ix){
+    if(!_model) return QString();
     return _model->fileName(ix);
 }
 

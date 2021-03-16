@@ -71,6 +71,8 @@ private slots:
 
     void on_fileTreeView_expanded(const QModelIndex &index);
 
+    void on_pushButton_clicked();
+
 private:
     void on_autosave_timer_timeout();
     Ui::MainWindow *ui;
